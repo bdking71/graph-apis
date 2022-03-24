@@ -9,7 +9,8 @@ import GraphApi from './components/GraphApi';
 import { IGraphApiProps } from './components/IGraphApiProps';
 
 export interface IGraphApiWebPartProps {
-  description: string;
+  GroupCalendarName: string;
+  GroupCalendarGUID: string; 
 }
 
 export default class GraphApiWebPart extends BaseClientSideWebPart<IGraphApiWebPartProps> {
@@ -18,7 +19,9 @@ export default class GraphApiWebPart extends BaseClientSideWebPart<IGraphApiWebP
     const element: React.ReactElement<IGraphApiProps> = React.createElement(
       GraphApi,
       {
-       context: this.context
+        GroupCalendarName: this.properties.GroupCalendarName,
+        GroupCalendarGUID: this.properties.GroupCalendarGUID,
+        context: this.context
       }
     );
 
@@ -46,8 +49,11 @@ export default class GraphApiWebPart extends BaseClientSideWebPart<IGraphApiWebP
             {
               groupName: strings.BasicGroupName,
               groupFields: [
-                PropertyPaneTextField('description', {
-                  label: strings.DescriptionFieldLabel
+                PropertyPaneTextField('GroupCalendarName', {
+                  label: strings.GroupCalendarNameFieldLabel
+                }),
+                PropertyPaneTextField('GroupCalendarGUID', {
+                    label: strings.GroupCalendarGUIDFieldLabel
                 })
               ]
             }

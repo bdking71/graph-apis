@@ -1,11 +1,8 @@
 declare interface IGraphApiWebPartStrings {
   PropertyPaneDescription: string;
   BasicGroupName: string;
-  DescriptionFieldLabel: string;
-  AppLocalEnvironmentSharePoint: string;
-  AppLocalEnvironmentTeams: string;
-  AppSharePointEnvironment: string;
-  AppTeamsTabEnvironment: string;
+  GroupCalendarNameFieldLabel: string;
+  GroupCalendarGUIDFieldLabel: string;
 }
 
 declare module 'GraphApiWebPartStrings' {

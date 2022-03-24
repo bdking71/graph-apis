@@ -33,6 +33,7 @@ export default class GraphApi extends React.Component<IGraphApiProps, iState> {
         if (this.state.calenderEvents) {
             return (
                 <section className={styles.graphApi}>
+                    <h2>{escape(this.props.GroupCalendarName)}</h2>
                     <Calendar   
                         calendarType="US"
                         defaultView="month" 
@@ -55,9 +56,10 @@ export default class GraphApi extends React.Component<IGraphApiProps, iState> {
     private getandProcessEventData = ():void => {                        
         this.props.context.msGraphClientFactory.getClient()
         .then((client: MSGraphClient): void => {          
-            client.api('/me/events')
+            client.api(`/groups/${this.props.GroupCalendarGUID}/events`)
             .select('subject,body,bodyPreview,organizer,attendees,start,end,location')
             .get((error, messages: any, rawResponse?: any) => {   
+                console.log(messages); 
                 if (!messages) {
                     console.error(error);   
                     throw error; 
@@ -67,13 +69,16 @@ export default class GraphApi extends React.Component<IGraphApiProps, iState> {
                         by the React-Awesome-Calendar and store the data in the Application State.  
                     */
                     let retval = [];         
-                    messages.value.map((eventItem) => {      
+                    messages.value.map((eventItem) => {  
+
+                        console.log(eventItem);
+
                         let tmp = {
                             id:  eventItem.id,
                             title: eventItem.subject,
-                            to: eventItem.end.dateTime,
-                            from: eventItem.start.dateTime,
-                            color: "#D2D2D2"
+                            to:  new Date(eventItem.end.dateTime).toLocaleDateString(),
+                            from: new Date(eventItem.start.dateTime).toLocaleDateString(),
+                            color: "#0F04F7"
                          };
                         retval.push(tmp); 
                     });
