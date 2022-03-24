@@ -1,0 +1,46 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/package-solution.schema.json",
+  "solution": {
+    "name": "graph-apis-client-side-solution",
+    "id": "bc5f96c6-a2b6-49c0-9fd9-11a56373505e",
+    "version": "2022.03.24.1145",
+    "includeClientSideAssets": true,
+    "skipFeatureDeployment": true,
+    "isDomainIsolated": false,
+    "webApiPermissionRequests": [
+        { 
+            "resource": "Microsoft Graph",
+            "scope": "Group.Read.All"
+        }    
+    ],
+    "developer": {
+      "name": "Bryan King",
+      "websiteUrl": "",
+      "privacyUrl": "",
+      "termsOfUseUrl": "",
+      "mpnId": "Undefined-1.14.0-rc.2"
+    },
+    "metadata": {
+      "shortDescription": {
+        "default": "graph-apis description"
+      },
+      "longDescription": {
+        "default": "Application to test pulling data from Exchange Calendars and displaying the data in SharePoint.  We are pulling data from Microsoft Graph and I hope the AO has allow this group.read access."
+      },
+      "screenshotPaths": [],
+      "videoUrl": "",
+      "categories": []
+    },
+    "features": [
+      {
+        "title": "graph-apis Feature",
+        "description": "The feature that activates elements of the graph-apis solution.",
+        "id": "1f93ec9a-166f-45f9-be16-48009f1fceea",
+        "version": "1.0.0.0"
+      }
+    ]
+  },
+  "paths": {
+    "zippedPackage": "solution/graph-apis.sppkg"
+  }
+}
