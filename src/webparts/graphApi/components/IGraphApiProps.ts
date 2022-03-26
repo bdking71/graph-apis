@@ -1,5 +1,5 @@
 export interface IGraphApiProps {
     GroupCalendarName: string; 
-    GroupCalendarGUID: string;
-    context: any;
+    CalendarCollection: any[];
+    Context: any;
 }

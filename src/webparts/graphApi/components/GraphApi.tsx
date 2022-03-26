@@ -30,6 +30,7 @@ export default class GraphApi extends React.Component<IGraphApiProps, iState> {
         const handleChange  = ()  => {
             event.preventDefault();
         };
+        console.log(this.state.calenderEvents); 
         if (this.state.calenderEvents) {
             return (
                 <section className={styles.graphApi}>
@@ -46,20 +47,23 @@ export default class GraphApi extends React.Component<IGraphApiProps, iState> {
         }
     }
 
-
     /* 
         Using the Graph API,  We are going to pull the all events 
         from the calendars that the current users has access.  We 
         will need to filter out the calendar we want to display in 
         our webpart. 
     */
-    private getandProcessEventData = ():void => {                        
-        this.props.context.msGraphClientFactory.getClient()
-        .then((client: MSGraphClient): void => {          
-            client.api(`/groups/${this.props.GroupCalendarGUID}/events`)
+    private getandProcessEventData = ():void => {        
+        
+        console.table(this.props.CalendarCollection);
+
+        this.props.Context.msGraphClientFactory.getClient()
+        .then((client: MSGraphClient): void => {   
+            console.log(`/groups/${this.props.CalendarCollection[0].CalendarGuid}/events`);       
+            client.api(`/groups/${this.props.CalendarCollection[0].CalendarGuid}/events`)
             .select('subject,body,bodyPreview,organizer,attendees,start,end,location')
             .get((error, messages: any, rawResponse?: any) => {   
-                console.log(messages); 
+                console.log(messages);
                 if (!messages) {
                     console.error(error);   
                     throw error; 
@@ -70,15 +74,12 @@ export default class GraphApi extends React.Component<IGraphApiProps, iState> {
                     */
                     let retval = [];         
                     messages.value.map((eventItem) => {  
-
-                        console.log(eventItem);
-
                         let tmp = {
                             id:  eventItem.id,
                             title: eventItem.subject,
                             to:  new Date(eventItem.end.dateTime).toLocaleDateString(),
                             from: new Date(eventItem.start.dateTime).toLocaleDateString(),
-                            color: "#0F04F7"
+                            color: `${this.props.CalendarCollection[0].CalendarColor}`
                          };
                         retval.push(tmp); 
                     });
