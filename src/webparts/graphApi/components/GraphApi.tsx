@@ -9,20 +9,19 @@ import {IACCalendarEvents, IACCalendarEvent} from './IACCalenderTypes';
 
 export interface iState {   
     myURL: string;       
-    calenderEvents: IACCalendarEvent[]; 
+    calenderEvents: any[]; 
 }
 
 export default class GraphApi extends React.Component<IGraphApiProps, iState> {
-
     public constructor (props:IGraphApiProps) {
-        super(props); 
+        super(props);         
         this.state = { 
             myURL: location.protocol + "//" + location.host + location.pathname,
             calenderEvents: []
         };                            
     }
     
-    public componentWillMount() {
+    public componentDidMount() {        
         this.getandProcessEventData();        
     }
 
@@ -30,8 +29,11 @@ export default class GraphApi extends React.Component<IGraphApiProps, iState> {
         const handleChange  = ()  => {
             event.preventDefault();
         };
-        console.log(this.state.calenderEvents); 
-        if (this.state.calenderEvents) {
+        const handleClickEvent = () => {
+            alert("CLICK!"); 
+        };
+ 
+        if (this.state.calenderEvents.length !== 0) {         
             return (
                 <section className={styles.graphApi}>
                     <h2>{escape(this.props.GroupCalendarName)}</h2>
@@ -39,57 +41,53 @@ export default class GraphApi extends React.Component<IGraphApiProps, iState> {
                         calendarType="US"
                         defaultView="month" 
                         events={this.state.calenderEvents}  
-                        onChange={() => handleChange()} />
-                </section>
-                );
-        } else {
-            return (<React.Fragment></React.Fragment>);
+                        onChange={() => handleChange()}
+                        onClickEvent={() => handleClickEvent()} />
+                </section> );
+        } else {                  
+            return (<Calendar   /> );   
         }
     }
 
+   
+                    
     /* 
         Using the Graph API,  We are going to pull the all events 
         from the calendars that the current users has access.  We 
         will need to filter out the calendar we want to display in 
         our webpart. 
     */
-    private getandProcessEventData = ():void => {        
-        
-        console.table(this.props.CalendarCollection);
-
-        this.props.Context.msGraphClientFactory.getClient()
-        .then((client: MSGraphClient): void => {   
-            console.log(`/groups/${this.props.CalendarCollection[0].CalendarGuid}/events`);       
-            client.api(`/groups/${this.props.CalendarCollection[0].CalendarGuid}/events`)
-            .select('subject,body,bodyPreview,organizer,attendees,start,end,location')
-            .get((error, messages: any, rawResponse?: any) => {   
-                console.log(messages);
-                if (!messages) {
-                    console.error(error);   
-                    throw error; 
-                } else {   
-                    /* 
-                        Using the data we received, we are going to transform the data to match what is expected
-                        by the React-Awesome-Calendar and store the data in the Application State.  
-                    */
-                    let retval = [];         
-                    messages.value.map((eventItem) => {  
-                        let tmp = {
-                            id:  eventItem.id,
-                            title: eventItem.subject,
-                            to:  new Date(eventItem.end.dateTime).toLocaleDateString(),
-                            from: new Date(eventItem.start.dateTime).toLocaleDateString(),
-                            color: `${this.props.CalendarCollection[0].CalendarColor}`
-                         };
-                        retval.push(tmp); 
-                    });
-                    /*
-                        We probally don't need to save the data we received from MSGraph, but just in case 
-                    */
-                    this.setState({calenderEvents:retval});  
-                }  
-            });
-        });
+    private getandProcessEventData = ():void => {               
+        for (let cnt = 0; cnt <= (this.props.CalendarCollection.length - 1); cnt ++) {            
+            this.props.Context.msGraphClientFactory.getClient()
+            .then((client: MSGraphClient): void => {                   
+                let calenderEventsState: any[] = this.state.calenderEvents;                   
+                client.api(`/groups/${this.props.CalendarCollection[cnt].CalendarGuid}/events`)            
+                .select('subject,body,bodyPreview,organizer,attendees,start,end,location')
+                .get((error, messages: any, rawResponse?: any) => {   
+                    if (!messages) {
+                        console.error(error);   
+                        throw error; 
+                    } else {   
+                        /* 
+                            Using the data we received, we are going to transform the data to match what is expected
+                            by the React-Awesome-Calendar and store the data in the Application State.  
+                        */    
+                        messages.value.map((eventItem) => {  
+                            let tmp = {
+                                id:  eventItem.id,
+                                title: eventItem.subject,
+                                to:  new Date(eventItem.end.dateTime).toLocaleDateString(),
+                                from: new Date(eventItem.start.dateTime).toLocaleDateString(),
+                                color: `${this.props.CalendarCollection[cnt].CalendarColor}`
+                            };                                              
+                            calenderEventsState.push(tmp);                       
+                        }); 
+                    }                
+                    this.setState({calenderEvents:calenderEventsState});  
+                });                  
+            }); 
+        }        
     }
 
 }

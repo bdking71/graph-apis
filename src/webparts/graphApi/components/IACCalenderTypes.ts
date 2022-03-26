@@ -5,9 +5,9 @@ export interface IACCalendarEvents {
 }
 
 export interface IACCalendarEvent {
-    id: any;
+    id: string;
     color: string;
-    from: Date;
-    to: Date;
+    from: string;
+    to: string;
     title: string;
 }
