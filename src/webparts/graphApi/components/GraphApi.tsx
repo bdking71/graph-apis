@@ -27,7 +27,8 @@ private calendar: any = null;
     //#region [ReactLifeCycleEvents]
 
         public constructor (props:IGraphApiProps) {
-            super(props);         
+            super(props);     
+            //! Do we need to store the events we received from MSGraph into the State?     
             this.state = { 
                 myURL: location.protocol + "//" + location.host + location.pathname,
                 calenderEvents: []
@@ -38,7 +39,7 @@ private calendar: any = null;
         }
         
         public componentDidMount() {   
-            //*Once the component completes it's intital mount; let's get some data.      
+            //* Once the component completes it's intital mount; let's get some data.      
             this.getandProcessEventData();        
         }
 
