@@ -1,6 +1,6 @@
 //#region [header]
     //[header] @File Name:          GraphApi.tsx
-    //[header] @Description:        Retreives calendar data from msGraph and displays the data using 
+    //[header] @Description:        Retrieves calendar data from msGraph and displays the data using 
     //[header]                      react-awesome-calendar [https://www.npmjs.com/package/react-awesome-calendar] and
     //[header]                      ReactWindow [https://www.npmjs.com/package/reactjs-windows]  
     //[header] @Author:             Bryan King
@@ -19,8 +19,9 @@
     import Calendar from 'react-awesome-calendar';
     import {IACCalendarEvents, IACCalendarEvent} from './IACCalenderTypes';
     import { removeOnThemeChangeCallback, ThemeSettingName } from 'office-ui-fabric-react';
-import * as strings from 'GraphApiWebPartStrings';
-    
+    import * as strings from 'GraphApiWebPartStrings';
+    import classnames from 'classnames';
+
 //#endregion
 
 //#region [Interfaces]
@@ -38,7 +39,7 @@ export default class GraphApi extends React.Component<IGraphApiProps, iState> {
     //#region [Variables]
 
         private calendar: any = null;  //* Reference to the calendar control on the page.  
-    
+
     //#endregion
 
     //#region [ReactLifeCycleEvents]
@@ -57,54 +58,78 @@ export default class GraphApi extends React.Component<IGraphApiProps, iState> {
         }
         
         public componentDidMount() {   
-            //* Once the component completes it's intital mount; let's get some data.      
+            //* Once the component completes it's initial mount; let's get some data.      
             this.getandProcessEventData();        
         }
 
         public render(): React.ReactElement<IGraphApiProps> {            
             console.log("🚀 ~ file: GraphApi.tsx ~ line 65 ~ GraphApi ~ render ~ this.state", this.state);
-            let myHiddenDiv: string = "graphEventContainer";
+            let myEventElement: string = "graphEventContainer";
+            let myEventDataElement: string = "myEventData";
+            let myCalendarElement: string = "graphCalendarContainer";
+
+            const handleButtonClick = () => {
+                event.preventDefault();
+                //* Let's hide the event and display the calendar.  
+                document.getElementById(myCalendarElement).classList.remove(`${styles.hide}`);                
+                document.getElementById(myCalendarElement).classList.add(`${styles.show}`);
+                document.getElementById(myEventElement).classList.remove(`${styles.show}`);
+                document.getElementById(myEventElement).classList.add(`${styles.hide}`);
+            }
+
             const handleChange  = ()  => {
                 //* The event.preventDefault() command below keeps the calendar from refreshing after
                 //* the onChange event is fired. 
                 event.preventDefault();
             };
-            const handleClickEvent = (eventID:string) => {              
+
+            const handleClickEvent = (eventID:string) => {            
+                //* Let's hide the calender and display a container for the event.  
+                document.getElementById(myCalendarElement).classList.remove(`${styles.show}`);                
+                document.getElementById(myCalendarElement).classList.add(`${styles.hide}`);
+                document.getElementById(myEventElement).classList.remove(`${styles.hide}`);
+                document.getElementById(myEventElement).classList.add(`${styles.show}`);
+
                 //* Let's iterate through state.outlookEvents and see if we can find a matching eventID, and 
                 //* use that row of data to display the Event to the user.   
-                this.state.outlookEvents.map((item, index) => {   
-                    //BUG: The item is comming equal this.state.outlookEvents instead of a single array from the 
-                    //BUG: this.state.outlookEvents. For now, I will use item[index] to reference the row, until I 
-                    //BUG: can debug why this is happening.                                      
-                    if (item[index].id == eventID) {
-                        let myEventData: string = "";                        
-                        let myDiv: HTMLElement = document.getElementById(myHiddenDiv);
-                        
-                        myEventData = `<h1>${item[index].subject}</h1>`;
-                        myEventData += `<span>${item[index].body.content}</span>`;
-                        myEventData += `<span>${item[index].location.displayName}</span>`;
-
-                        myDiv.innerHTML = myEventData;
-                        console.log("🚀 ~ file: GraphApi.tsx ~ line 87 ~ GraphApi ~ this.state.outlookEvents.map ~ myEventData", myEventData)
+                this.state.outlookEvents.map((item, index) => {                                                 
+                    if (item.id == eventID) {
+                        console.log("🚀 ~ file: GraphApi.tsx ~ line 90 ~ GraphApi ~ this.state.outlookEvents.map ~ item", item);                    
+                        //* Really, can they make working with dates any more of a nightmare.  Ugg. 
+                        let startDate:Date = this.SharePointDateMaker(item.start.dateTime);                      
+                        let endDate:Date = this.SharePointDateMaker(item.end.dateTime);                                        
+                        let myEventData: string = "";                                  
+                        myEventData = `<h2>${item.subject}</h2>`;
+                        myEventData += `<p><strong>Description:</strong><br><span>${item.body.content}</span></p>`;
+                        if (item.location.displayName) {
+                            myEventData += `<p><strong>Location: </strong><span>${item.location.displayName}</span></p>`;
+                        }                    
+                        myEventData += `<p><strong>Start Time: </strong><span>${startDate.toString()}</span></p>`;                        
+                        myEventData += `<p><strong>End Time: </strong><span>${endDate.toString()}</span></p>`;                        
+                        document.getElementById(myEventDataElement).innerHTML = myEventData;
                     }
                 });     
             };
-
             //* Let's check to see if there are any events in the state to display.  If not, we
             //* we will show an empty calendar. 
             if (this.state.calenderEvents.length !== 0) {         
                 return (
-                    <section className={styles.graphApi}>
-                        <div id={myHiddenDiv} className={styles.floated}>Blah, Blah, Blah!</div>
-                        <h2>{escape(this.props.GroupCalendarName)}</h2>
-                        <Calendar  
-                            ref={this.calendar} 
-                            calendarType="US"
-                            defaultView="month" 
-                            events={this.state.calenderEvents}  
-                            onChange={(event) => handleChange()}
-                            onClickEvent={(event) => handleClickEvent(event)} />
-                    </section> );
+                    <div className={styles.graphApi}>                                      
+                        <section id={myEventElement} className={classnames(styles.hide, styles.event)}>
+                            <span id={myEventDataElement}>Blah, Blah, Blah...</span>
+                            <button onClick={() => handleButtonClick()}>Back to calendar</button>    
+                        </section>  
+                        <section id={myCalendarElement} className={classnames(styles.show, styles.event)}>
+                            <h2>{escape(this.props.GroupCalendarName)}</h2>
+                            <Calendar  
+                                ref={this.calendar} 
+                                calendarType="US"
+                                defaultView="month" 
+                                events={this.state.calenderEvents}  
+                                onChange={(event) => handleChange()}
+                                onClickEvent={(event) => handleClickEvent(event)} />
+                        </section>    
+                    </div> );
             } else {                  
                 return (<Calendar   /> );   
             }
@@ -113,6 +138,17 @@ export default class GraphApi extends React.Component<IGraphApiProps, iState> {
     //#endregion
   
     //#region [PrivateMethods]
+
+        private SharePointDateMaker = (spDateString: string):Date => {
+            console.log("🚀 ~ file: GraphApi.tsx ~ line 143 ~ GraphApi ~ spDateString", spDateString)
+            //* The format that SP is giving us is "2022-04-01T20:30:00.0000000" without the UTC.  This bit of information is 
+            //* one another line in the JSON.  Here we are trying to fix the date and time in UTC so we can convert it back
+            //* to local time, IE: Tue Apr 05 2022 16:30:00 GMT-0400 (Eastern Daylight Time).  
+            let retVal = new Date(spDateString.substring(0,10) + " " + spDateString.substring(11,22) + " UTC");    
+            console.log("🚀 ~ file: GraphApi.tsx ~ line 148 ~ GraphApi ~ retVal", retVal)                    
+            return retVal;
+        }
+            
 
         private getandProcessEventData = ():void => {        
             //* We will iterate through the Calendar Collection in order to pull data from MSGraph 
@@ -134,19 +170,22 @@ export default class GraphApi extends React.Component<IGraphApiProps, iState> {
                             throw error; 
                         } else {   
                             //* Graph returns the data we want in messages.value. We need iterate the array and store 
-                            //* the data into a format that our calendar plug-in can understand.  
+                            //* the data into a format that our calendar plug-in can understand.  Note: MSGraph returns
+                            //* the to and from dates in a odd format. 
+                            //BUG: The times that are being pushed here are correct, but aren't being displayed correctly.    
                             messages.value.map((eventItem) => {  
                                 let tmp = {
                                     id:  eventItem.id,
-                                    title: eventItem.subject,
-                                    to:  new Date(eventItem.end.dateTime).toLocaleDateString(),
-                                    from: new Date(eventItem.start.dateTime).toLocaleDateString(),
+                                    title: eventItem.subject,                                    
+                                    from: this.SharePointDateMaker(eventItem.start.dateTime).toString(),
+                                    to:  this.SharePointDateMaker(eventItem.end.dateTime).toString(),
                                     color: `${this.props.CalendarCollection[cnt].CalendarColor}`
                                 }; 
                                 //* After reach iteration,  we are going to push the data into the variable we stored
                                 //* the current state into.                                               
                                 calenderEventsState.push(tmp);    
-                                outlookEventsState.push(messages.value);
+                                console.log("🚀 ~ file: GraphApi.tsx ~ line 186 ~ GraphApi ~ messages.value.map ~ tmp", tmp)
+                                outlookEventsState.push(eventItem);
                             }); 
                         }                
                         //* Finally, we are going to set both the calendarEvents and the outlookEvents state with the 

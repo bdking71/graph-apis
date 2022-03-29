@@ -1,5 +1,15 @@
 
-/* https://pnp.github.io/sp-dev-fx-property-controls*/
+//#region [header]
+    //[header] @File Name:          GraphApiWebPart.ts
+    //[header] @Description:        Retrieves calendar data from msGraph and displays the data using 
+    //[header]                      react-awesome-calendar [https://www.npmjs.com/package/react-awesome-calendar] and
+    //[header]                      ReactWindow [https://www.npmjs.com/package/reactjs-windows]  
+    //[header] @Author:             Bryan King
+    //[header] @Date:               March 29, 2022
+    //[header] @File Version:       20220328-1243  
+//#endregion
+
+
 
 //#region [Imports]
 
@@ -70,7 +80,7 @@ export default class GraphApiWebPart extends BaseClientSideWebPart<IGraphApiWebP
                   PropertyFieldCollectionData("CalendarCollection", {
                       key: "collectionData",
                       label: "Exchange Calendars",
-                      panelHeader: "Calendars to Display in this Webpart.",
+                      panelHeader: "Calendars to Display",
                       manageBtnLabel: "Configure Calendars",
                       value: this.properties.CalendarCollection,
                       fields: [

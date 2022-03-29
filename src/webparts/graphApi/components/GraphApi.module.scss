@@ -3,15 +3,31 @@
   padding: 1em;
 
   h2 {
-      text-align: center;
+    text-align: center;
   }
 
-  .floated {
-    position:absolute;
-    top: 123px;
-    border:1px solid black; 
-    background-color: rgba(0,0,0,.75);
+  .event {
+    text-align: left;
+
+
   }
+
+  .calendar {
+    text-align: left;
+  }
+
+  .hide {
+    display:none;
+  }
+
+  .show {
+    display:block;
+  }
+
+  
+
+
+
 
 
 }
