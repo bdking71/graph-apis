@@ -3,7 +3,7 @@
   "solution": {
     "name": "graph-apis-client-side-solution",
     "id": "bc5f96c6-a2b6-49c0-9fd9-11a56373505e",
-    "version": "2022.03.28.1115",
+    "version": "2022.03.30.1111",
     "includeClientSideAssets": true,
     "skipFeatureDeployment": true,
     "isDomainIsolated": false,

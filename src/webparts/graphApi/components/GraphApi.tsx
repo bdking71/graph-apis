@@ -62,8 +62,7 @@ export default class GraphApi extends React.Component<IGraphApiProps, iState> {
             this.getandProcessEventData();        
         }
 
-        public render(): React.ReactElement<IGraphApiProps> {            
-            console.log("🚀 ~ file: GraphApi.tsx ~ line 65 ~ GraphApi ~ render ~ this.state", this.state);
+        public render(): React.ReactElement<IGraphApiProps> {                        
             let myEventElement: string = "graphEventContainer";
             let myEventDataElement: string = "myEventData";
             let myCalendarElement: string = "graphCalendarContainer";
@@ -75,7 +74,7 @@ export default class GraphApi extends React.Component<IGraphApiProps, iState> {
                 document.getElementById(myCalendarElement).classList.add(`${styles.show}`);
                 document.getElementById(myEventElement).classList.remove(`${styles.show}`);
                 document.getElementById(myEventElement).classList.add(`${styles.hide}`);
-            }
+            };
 
             const handleChange  = ()  => {
                 //* The event.preventDefault() command below keeps the calendar from refreshing after
@@ -116,8 +115,8 @@ export default class GraphApi extends React.Component<IGraphApiProps, iState> {
                 return (
                     <div className={styles.graphApi}>                                      
                         <section id={myEventElement} className={classnames(styles.hide, styles.event)}>
-                            <span id={myEventDataElement}>Blah, Blah, Blah...</span>
-                            <button onClick={() => handleButtonClick()}>Back to calendar</button>    
+                            <span id={myEventDataElement}></span>
+                            <button className={styles.myButton} onClick={() => handleButtonClick()}>Back to calendar</button>    
                         </section>  
                         <section id={myCalendarElement} className={classnames(styles.show, styles.event)}>
                             <h2>{escape(this.props.GroupCalendarName)}</h2>
@@ -140,16 +139,27 @@ export default class GraphApi extends React.Component<IGraphApiProps, iState> {
     //#region [PrivateMethods]
 
         private SharePointDateMaker = (spDateString: string):Date => {
-            console.log("🚀 ~ file: GraphApi.tsx ~ line 143 ~ GraphApi ~ spDateString", spDateString)
             //* The format that SP is giving us is "2022-04-01T20:30:00.0000000" without the UTC.  This bit of information is 
             //* one another line in the JSON.  Here we are trying to fix the date and time in UTC so we can convert it back
             //* to local time, IE: Tue Apr 05 2022 16:30:00 GMT-0400 (Eastern Daylight Time).  
-            let retVal = new Date(spDateString.substring(0,10) + " " + spDateString.substring(11,22) + " UTC");    
-            console.log("🚀 ~ file: GraphApi.tsx ~ line 148 ~ GraphApi ~ retVal", retVal)                    
+            let retVal = new Date(spDateString.substring(0,10) + " " + spDateString.substring(11,22) + " UTC");                
             return retVal;
         }
-            
 
+        //* Really can JavaScript make date functions any worse? This function is a bit Kludgy, but it works! 
+        //* Anyway, we need to build a date string for the calendar and force the React-Awesome-Calendar display 
+        //* the event on the date time we provide.  We do so by creating the string this way: "YYYY-MM-DDTHH:MM:SS+00.00".  
+        private RACDateMaker = (RACDateString: string): string => {            
+            let RACDate: Date = new Date (RACDateString.substring(0,10) + " " + RACDateString.substring(11,22) + " UTC");                    
+            let myMonth: number = RACDate.getMonth() + 1;
+            return RACDate.getFullYear().toString() + "-" + 
+                    ("0" + myMonth.toString()).slice(-2).toString() + "-" + 
+                    ("0" + RACDate.getDate()).slice(-2).toString() + "T" +
+                    ("0" + RACDate.getHours()).slice(-2).toString() + ":" +
+                    ("0" + RACDate.getMinutes()).slice(-2).toString() + ":" +
+                    ("0" + RACDate.getSeconds()).slice(-2).toString() + "+00:00";                                            
+        }
+            
         private getandProcessEventData = ():void => {        
             //* We will iterate through the Calendar Collection in order to pull data from MSGraph 
             //* for each calendar the user defined in the webpart props.                   
@@ -177,14 +187,13 @@ export default class GraphApi extends React.Component<IGraphApiProps, iState> {
                                 let tmp = {
                                     id:  eventItem.id,
                                     title: eventItem.subject,                                    
-                                    from: this.SharePointDateMaker(eventItem.start.dateTime).toString(),
-                                    to:  this.SharePointDateMaker(eventItem.end.dateTime).toString(),
+                                    from: this.RACDateMaker(eventItem.start.dateTime),
+                                    to:  this.RACDateMaker(eventItem.end.dateTime),
                                     color: `${this.props.CalendarCollection[cnt].CalendarColor}`
                                 }; 
                                 //* After reach iteration,  we are going to push the data into the variable we stored
                                 //* the current state into.                                               
                                 calenderEventsState.push(tmp);    
-                                console.log("🚀 ~ file: GraphApi.tsx ~ line 186 ~ GraphApi ~ messages.value.map ~ tmp", tmp)
                                 outlookEventsState.push(eventItem);
                             }); 
                         }                
