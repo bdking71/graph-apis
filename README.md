@@ -4,7 +4,12 @@
 
 This is a proof-of-concept application which pulls data from multiple Exchange Group Calendars and displays in a single calendar in SharePoint.
 
-![Screenshot](https://bdking71.files.wordpress.com/2022/03/calendar.png "a title")
+## Screenshots
+![Screenshot](https://bdking71.files.wordpress.com/2022/03/calendar.png "Month View")
+
+![Screenshot](https://bdking71.files.wordpress.com/2022/03/calendar2.png "Day View")
+
+![Screenshot](https://bdking71.files.wordpress.com/2022/03/calendar1.png "Event")
 
 ## Used SharePoint Framework Version
 
@@ -20,11 +25,10 @@ Version|Comments
 --------|---------
 20220326-0915 | Added the ability to add and display multiple calendars. 
 
-## Disclaimer
+### "Sharing is Caring"
 
+### Disclaimer
 **THIS CODE IS PROVIDED *AS IS* WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING ANY IMPLIED WARRANTIES OF FITNESS FOR A PARTICULAR PURPOSE, MERCHANTABILITY, OR NON-INFRINGEMENT.**
-
----
 
 ## Minimal Path to Awesome
 

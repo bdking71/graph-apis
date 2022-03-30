@@ -20,7 +20,13 @@
             "CalendarTitle":"Synergy Interaction Corporation Event Calendar",
             "CalendarGuid":"b97aeaec-254b-4e45-9766-0ef0f667286a",
             "CalendarColor":"#ff0000"
-        }]  
+        }],
+        "SharePointCalendarCollection": [{
+          "SharePointCalendarTitle":"Synergy Interaction Corporation SharePoint Calendar",
+          "SharePointCalendarSiteUrl":"https://bksdevsite.sharepoint.com/",
+          "SharePointCalendarName": "Calendar",
+          "SharePointCalendarColor":"#00FF00"
+      }]
     }
   }]
 }

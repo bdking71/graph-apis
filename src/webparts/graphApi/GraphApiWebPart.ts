@@ -32,6 +32,7 @@
   export interface IGraphApiWebPartProps {
     GroupCalendarName: string;
     CalendarCollection: any[];
+    SharePointCalendarCollection: any[];
   }
 
 //#endregion
@@ -46,11 +47,15 @@ export default class GraphApiWebPart extends BaseClientSideWebPart<IGraphApiWebP
       {
         GroupCalendarName: this.properties.GroupCalendarName,  
         CalendarCollection: this.properties.CalendarCollection,
+        SharePointCalendarCollection: this.properties.SharePointCalendarCollection,        
         Context: this.context
       }
     );
     ReactDom.render(element, this.domElement);
     telemetry.optOut();
+    console.clear;
+    console.log("Sharing is Caring");
+    console.log("🚀 ~ file: GraphApiWebPart.ts ~ line 55 ~ GraphApiWebPart ~ render ~ SharePointCalendarCollection", this.properties.SharePointCalendarCollection);
   }
 
   //#region [ProtectedMethods]
@@ -77,6 +82,8 @@ export default class GraphApiWebPart extends BaseClientSideWebPart<IGraphApiWebP
                   PropertyPaneTextField('GroupCalendarName', {
                       label: strings.GroupCalendarNameFieldLabel
                   }),
+                  //* The CalendarCollection property is designed to keep 
+                  //* information on Outlook Group Calendars.  
                   PropertyFieldCollectionData("CalendarCollection", {
                       key: "collectionData",
                       label: "Exchange Calendars",
@@ -98,6 +105,43 @@ export default class GraphApiWebPart extends BaseClientSideWebPart<IGraphApiWebP
                         },
                         {
                           id: "CalendarColor",
+                          title: "Calendar Color",
+                          type: CustomCollectionFieldType.color,
+                          required: true
+                        },
+                        
+                      ],
+                      disabled: false
+                    }),
+                    //* The SharePointCalendarCollection property is designed to keep 
+                    //* information on Calendars that exists in SharePoint.  
+                    PropertyFieldCollectionData("SharePointCalendarCollection", {
+                      key: "SharePointCalendarCollection",
+                      label: "SharePoint Calendars",
+                      panelHeader: "Configure SharePoint Calendars to Display",
+                      manageBtnLabel: "Configure SharePoint Calendars",
+                      value: this.properties.SharePointCalendarCollection,
+                      fields: [
+                        {
+                          id: "SharePointCalendarTitle",
+                          title: "Calendar Title",
+                          type: CustomCollectionFieldType.string,
+                          required: true
+                        },
+                        {
+                          id: "SharePointCalendarSiteUrl",
+                          title: "SharePoint Site",
+                          type: CustomCollectionFieldType.string,
+                          required: true
+                        },
+                        {
+                          id: "SharePointCalendarName",
+                          title: "Calendar Name",
+                          type: CustomCollectionFieldType.string,
+                          required: true
+                        },
+                        {
+                          id: "SharePointCalendarColor",
                           title: "Calendar Color",
                           type: CustomCollectionFieldType.color,
                           required: true

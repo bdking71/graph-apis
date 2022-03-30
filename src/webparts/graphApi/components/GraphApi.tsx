@@ -11,6 +11,9 @@
 //#region [Imports]
 
     import * as React from 'react';
+
+    import { WebPartContext } from "@microsoft/sp-webpart-base";
+
     import styles from './GraphApi.module.scss';
     import {IGraphApiProps} from './IGraphApiProps';
     import {escape} from '@microsoft/sp-lodash-subset';
@@ -21,7 +24,7 @@
     import { removeOnThemeChangeCallback, ThemeSettingName } from 'office-ui-fabric-react';
     import * as strings from 'GraphApiWebPartStrings';
     import classnames from 'classnames';
-
+    
 //#endregion
 
 //#region [Interfaces]
@@ -39,7 +42,8 @@ export default class GraphApi extends React.Component<IGraphApiProps, iState> {
     //#region [Variables]
 
         private calendar: any = null;  //* Reference to the calendar control on the page.  
-
+        //private _sp: SPFI = null;
+    
     //#endregion
 
     //#region [ReactLifeCycleEvents]
@@ -58,11 +62,14 @@ export default class GraphApi extends React.Component<IGraphApiProps, iState> {
         }
         
         public componentDidMount() {   
-            //* Once the component completes it's initial mount; let's get some data.      
-            this.getandProcessEventData();        
+            //* Once the component completes it's initial mount; let's get outlook data.      
+            this.getandProcessOutlookEventData();        
+            
         }
 
-        public render(): React.ReactElement<IGraphApiProps> {                        
+        public render(): React.ReactElement<IGraphApiProps> {   
+            console.log("🚀 ~ file: GraphApi.tsx ~ line 66 ~ GraphApi ~ render ~ this.props", this.props);
+                                 
             let myEventElement: string = "graphEventContainer";
             let myEventDataElement: string = "myEventData";
             let myCalendarElement: string = "graphCalendarContainer";
@@ -160,7 +167,12 @@ export default class GraphApi extends React.Component<IGraphApiProps, iState> {
                     ("0" + RACDate.getSeconds()).slice(-2).toString() + "+00:00";                                            
         }
             
-        private getandProcessEventData = ():void => {        
+        private getandProcessSharePointEventData = ():void => {   
+            //* Let's get data from SharePoint using the SharePoint PnP modules. 
+
+        }
+
+        private getandProcessOutlookEventData = ():void => {        
             //* We will iterate through the Calendar Collection in order to pull data from MSGraph 
             //* for each calendar the user defined in the webpart props.                   
             for (let cnt = 0; cnt <= (this.props.CalendarCollection.length - 1); cnt ++) {      
