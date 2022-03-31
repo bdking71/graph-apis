@@ -38,7 +38,6 @@
 //#endregion
 
 const telemetry = PnPTelemetry.getInstance();
-
 export default class GraphApiWebPart extends BaseClientSideWebPart<IGraphApiWebPartProps> {
 
   public render(): void {
@@ -52,9 +51,8 @@ export default class GraphApiWebPart extends BaseClientSideWebPart<IGraphApiWebP
       }
     );
     ReactDom.render(element, this.domElement);
-    telemetry.optOut();
-    console.clear;
-    console.log("Sharing is Caring");
+    telemetry.optOut();    
+    
     console.log("🚀 ~ file: GraphApiWebPart.ts ~ line 55 ~ GraphApiWebPart ~ render ~ SharePointCalendarCollection", this.properties.SharePointCalendarCollection);
   }
 

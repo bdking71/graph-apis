@@ -11,9 +11,7 @@
 //#region [Imports]
 
     import * as React from 'react';
-
     import { WebPartContext } from "@microsoft/sp-webpart-base";
-
     import styles from './GraphApi.module.scss';
     import {IGraphApiProps} from './IGraphApiProps';
     import {escape} from '@microsoft/sp-lodash-subset';
@@ -26,6 +24,7 @@
     import classnames from 'classnames';
     
 //#endregion
+
 
 //#region [Interfaces]
 
@@ -42,8 +41,7 @@ export default class GraphApi extends React.Component<IGraphApiProps, iState> {
     //#region [Variables]
 
         private calendar: any = null;  //* Reference to the calendar control on the page.  
-        //private _sp: SPFI = null;
-    
+
     //#endregion
 
     //#region [ReactLifeCycleEvents]
@@ -58,13 +56,16 @@ export default class GraphApi extends React.Component<IGraphApiProps, iState> {
             };     
             //! I don't believe the "this.calendar=React.creatRef();" is needed, but I thought I would create 
             //! the ref in case there is a future need. 
-            this.calendar = React.createRef();                       
+            this.calendar = React.createRef();   
+                
         }
         
         public componentDidMount() {   
-            //* Once the component completes it's initial mount; let's get outlook data.      
-            this.getandProcessOutlookEventData();        
-            
+            //* Verify there is data in the "CalendarCollection" prop.
+            if (this.props.CalendarCollection) {
+                //* Once the component completes it's initial mount; let's get outlook data.
+                this.getandProcessOutlookEventData();
+            }                                    
         }
 
         public render(): React.ReactElement<IGraphApiProps> {   
@@ -172,9 +173,9 @@ export default class GraphApi extends React.Component<IGraphApiProps, iState> {
 
         }
 
-        private getandProcessOutlookEventData = ():void => {        
+        private getandProcessOutlookEventData = ():void => {  
             //* We will iterate through the Calendar Collection in order to pull data from MSGraph 
-            //* for each calendar the user defined in the webpart props.                   
+            //* for each calendar the user defined in the webpart props.            
             for (let cnt = 0; cnt <= (this.props.CalendarCollection.length - 1); cnt ++) {      
                 //* let's makes a connection to the MSGraph...
                 this.props.Context.msGraphClientFactory.getClient().then((client: MSGraphClient): void => {   

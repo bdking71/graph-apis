@@ -59,4 +59,5 @@ This extension illustrates the following concepts:
 - [classnames](https://www.npmjs.com/package/classnames) - A simple JavaScript utility for conditionally joining classNames together.
 - [Microsoft Graph TypeScript Types](https://www.npmjs.com/package/@microsoft/microsoft-graph-types) - The Microsoft Graph TypeScript definitions enable editors to provide intellisense on Microsoft Graph objects including users, messages, and groups
 - [React Awesome Calendar](https://www.npmjs.com/package/react-awesome-calendar) - react-awesome-calendar is a library that allows you to easily add a calendar to your application. React Awesome Calendar also supports the ability to display events.
+- [PNP Transition Guide](https://pnp.github.io/pnpjs/getting-started/) - PnPjs is a collection of fluent libraries for consuming SharePoint, Graph, and Office 365 REST APIs in a type-safe way. You can use it within SharePoint Framework, Nodejs, or any JavaScript project. This an open source initiative and we encourage contributions and constructive feedback from the community.
 

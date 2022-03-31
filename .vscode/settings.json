@@ -12,5 +12,10 @@
   "typescript.tsdk": ".\\node_modules\\typescript\\lib",
   "cSpell.ignoreWords": [
     "getand"
+  ],
+  "cSpell.words": [
+    "DDTHH",
+    "odata",
+    "preconfigured"
   ]
 }
