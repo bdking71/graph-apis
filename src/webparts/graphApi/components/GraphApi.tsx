@@ -51,6 +51,8 @@ export default class GraphApi extends React.Component<IGraphApiProps, iState> {
 
         private calendar: any = null;  //* Reference to the calendar control on the page.  
         private sp;
+        private sharepointEventsParser: any = require("sharepoint-events-parser");
+
 
     //#endregion
 
@@ -218,9 +220,8 @@ export default class GraphApi extends React.Component<IGraphApiProps, iState> {
                                     console.log("🚀 ~ file: GraphApi.tsx ~ line 216 ~ GraphApi ~ spEvents.map ~ restQuery", restQuery)
                                     axios({method: 'get', url: restQuery, responseType: 'json'}).then(recurrenceInfo =>{
                                         console.log("🚀 ~ file: GraphApi.tsx ~ line 216 ~ GraphApi ~ axios ~ recurrenceInfo", recurrenceInfo)                                    
-                                        var sharepointEventsParser: any = require("sharepoint-events-parser");
-
-                                        let parsedArray = sharepointEventsParser.parseEvent(recurrenceInfo.data);
+                                        
+                                        let parsedArray = this.sharepointEventsParser.parseEvent(recurrenceInfo.data);
                                         console.log("🚀 ~ file: GraphApi.tsx ~ line 216 ~ GraphApi ~ axios ~ parsedArray", parsedArray)
                                         
                                     });    
