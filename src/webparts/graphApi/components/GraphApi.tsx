@@ -19,11 +19,13 @@
     import * as MicrosoftGraph from '@microsoft/microsoft-graph-types';
     import Calendar from 'react-awesome-calendar';
     import {IACCalendarEvents, IACCalendarEvent} from './IACCalenderTypes';
-    import { removeOnThemeChangeCallback, ThemeSettingName } from 'office-ui-fabric-react';
+    import axios from 'axios';
+    //import { removeOnThemeChangeCallback, ThemeSettingName } from 'office-ui-fabric-react';
     import * as strings from 'GraphApiWebPartStrings';
     import classnames from 'classnames';
-    
+    //import { spEventsParser } from 'sharepoint-events-parser';
     import { spfi, SPFx } from "@pnp/sp";
+
     import "@pnp/sp/webs";
     import "@pnp/sp/lists";
     import "@pnp/sp/items";
@@ -38,6 +40,7 @@
         myURL: string;       
         calenderEvents: any[]; 
         outlookEvents: any[];
+        sharePointEvents: any[];
     }
 
 //#endregion
@@ -58,8 +61,9 @@ export default class GraphApi extends React.Component<IGraphApiProps, iState> {
     
             this.state = { 
                 myURL: location.protocol + "//" + location.host + location.pathname,
-                calenderEvents: [],  //* Storage of events for the Calendar
-                outlookEvents: []  //* Storage of events we've received from MsGraph
+                calenderEvents: [],   //* Storage of events for the Calendar
+                outlookEvents: [],    //* Storage of events we've received from MsGraph
+                sharePointEvents: []  //* Storage of events we've received from SharePoint Online. 
             };     
             //! I don't believe the "this.calendar=React.creatRef();" is needed, but I thought I would create 
             //! the ref in case there is a future need. 
@@ -79,8 +83,7 @@ export default class GraphApi extends React.Component<IGraphApiProps, iState> {
         public render(): React.ReactElement<IGraphApiProps> {   
             console.log("🚀 ~ file: GraphApi.tsx ~ line 72 ~ GraphApi ~ render ~ this.props", this.props);
             console.log("🚀 ~ file: GraphApi.tsx ~ line 73 ~ GraphApi ~ render ~ this.state", this.state);
-            
-            
+                        
             let myEventElement: string = "graphEventContainer";
             let myEventDataElement: string = "myEventData";
             let myCalendarElement: string = "graphCalendarContainer";
@@ -168,9 +171,9 @@ export default class GraphApi extends React.Component<IGraphApiProps, iState> {
         //* Anyway, we need to build a date string for the calendar and force the React-Awesome-Calendar display 
         //* the event on the date time we provide.  We do so by creating the string this way: "YYYY-MM-DDTHH:MM:SS+00.00".  
         private RACDateMaker = (RACDateString: string): string => {            
-            //BUG: I had this working; however, when I checked moved the code base over to 
-            //BUG: an Ubuntu 21 machines, it started throwing invalid dates errors.  I am 
-            //BUG: working if the Invalid Date error is a issue with the Firefox 98.0.2? 
+            //BUGFIX: I had this working; however, when I checked moved the code base over to 
+            //BUGFIX: an Ubuntu 21 machines, it started throwing invalid dates errors.  I am 
+            //BUGFIX: working if the "Invalid Date" error is a issue with the Firefox 98.0.2? 
             let RACDate: Date = new Date (RACDateString.substring(0,10) + "T" + RACDateString.substring(11,16) + "Z");                    
             let myMonth: number = RACDate.getMonth() + 1;
             let retval: string = RACDate.getFullYear().toString() + "-" + 
@@ -187,12 +190,60 @@ export default class GraphApi extends React.Component<IGraphApiProps, iState> {
             //* Let's get data from SharePoint using the SharePoint PnP modules. First, let's 
             //* verify we have connection data for any SharePoint Calendar.
             if (this.props.SharePointCalendarCollection.length !== 0) { 
+                    //* let's make a copy of the current calender entries stored in the calendarEvents and the
+                    //* sharePointEvents state so, we don't loose them when added new entries.  
+                    let calenderEventsState: any[] = this.state.calenderEvents;
+                    let sharePointEventsState: any[] = this.state.sharePointEvents;
+                    
                 //* Let's iterate through the array that contains the SharePoint connection info 
                 for (let cnt:number = 0; cnt <= (this.props.SharePointCalendarCollection.length - 1); cnt ++) {
-                    this.sp = spfi("https://bksdevsite.sharepoint.com").using(SPFx(this.props.Context));
-                    this.sp.web.lists.getByTitle("calendar").items().then((items) => {
-                        console.log("🚀 ~ file: GraphApi.tsx ~ line 191 ~ GraphApi ~ items", items);
-                        
+                    this.sp = spfi(this.props.SharePointCalendarCollection[cnt].SharePointCalendarSiteUrl).using(SPFx(this.props.Context));
+                    this.sp.web.lists
+                        .getByTitle(this.props.SharePointCalendarCollection[cnt].SharePointCalendarName)
+                        .items()
+                        .then((spEvents) => {
+                            console.log("🚀 ~ file: GraphApi.tsx ~ line 216 ~ GraphApi ~ spEvents", spEvents);
+                            spEvents.map((spEvent) => {  
+                                console.log("🚀 ~ file: GraphApi.tsx ~ line 216 ~ GraphApi ~ spEvent", spEvent);
+                                //* SharePoint stores recurring events as a single event in the calendar. It doesn't
+                                //* look as if there is a good way to have SharePoint return the event expanded. So, we 
+                                //* will need to do this the hard way.  First, we will check to see if the
+                                //* current event in the loop is a recurring event (fRecurrence = true).  
+                                if (spEvent.fRecurrence == true) {
+                                    //* This event is part of the recurring event; The way to get the data from REST is: 
+                                    //* [URL]/_api/web/lists/getByTitle('[Calendar Name]')/items([ID])/RecurrenceData. Since,
+                                    //* I couldn't find a pnp plugin that would provide us with the recurrence data; therefore, 
+                                    //* I will use Axios to preform a rest query.   
+                                    let restQuery = `${this.props.SharePointCalendarCollection[cnt].SharePointCalendarSiteUrl}_api/web/lists/getByTitle('${this.props.SharePointCalendarCollection[cnt].SharePointCalendarName}')/items(${spEvent.ID})?$select=RecurrenceData,MasterSeriesItemID,EventType,*`;
+                                    console.log("🚀 ~ file: GraphApi.tsx ~ line 216 ~ GraphApi ~ spEvents.map ~ restQuery", restQuery)
+                                    axios({method: 'get', url: restQuery, responseType: 'json'}).then(recurrenceInfo =>{
+                                        console.log("🚀 ~ file: GraphApi.tsx ~ line 216 ~ GraphApi ~ axios ~ recurrenceInfo", recurrenceInfo)                                    
+                                        var sharepointEventsParser: any = require("sharepoint-events-parser");
+
+                                        let parsedArray = sharepointEventsParser.parseEvent(recurrenceInfo.data);
+                                        console.log("🚀 ~ file: GraphApi.tsx ~ line 216 ~ GraphApi ~ axios ~ parsedArray", parsedArray)
+                                        
+                                    });    
+                                    // https://www.npmjs.com/package/sharepoint-events-parser
+                                } else {
+                                    let tmp = {
+                                        id:  spEvent.Id,
+                                        title: spEvent.Title,                                    
+                                        from: spEvent.EventDate,
+                                        to:  spEvent.EndDate,
+                                        color: `${this.props.SharePointCalendarCollection[cnt].SharePointCalendarColor}`,
+                                        origin: "SPO" //* This variable will tell the app where to look for the long Description of the Event.
+                                    }; 
+                                    console.log("🚀 ~ file: GraphApi.tsx ~ line 216 ~ GraphApi ~ spEvent.map ~ tmp", tmp)
+                                    //* After reach iteration,  we are going to push the data into the variable we stored
+                                    //* the current state into.                                               
+                                    calenderEventsState.push(tmp);    
+                                    sharePointEventsState.push(spEvent);
+                                }                            
+                        });
+                        //* Finally, we are going to set both the calendarEvents and the outlookEvents state with the 
+                        //* events have in this iteration of the Calendar Collection.
+                        this.setState({calenderEvents:calenderEventsState, sharePointEvents:sharePointEventsState});  
                         // https://sharepoint.stackexchange.com/questions/23221/rest-api-expand-recurring-calendar-events
 
                     });
@@ -210,7 +261,8 @@ export default class GraphApi extends React.Component<IGraphApiProps, iState> {
                     //* outlookEvent state so, we don't loose them when added new entries.  
                     let calenderEventsState: any[] = this.state.calenderEvents;
                     let outlookEventsState: any[] = this.state.outlookEvents; 
-
+                    //BUG: [ID: 202204040921]Recurring Events stored in Outlook are not displaying all events.  Currently, it
+                    //BUG: [ID: 202204040921]is showing only the first event in the series. 
                     client.api(`/groups/${this.props.CalendarCollection[cnt].CalendarGuid}/events`)            
                     .select('subject,body,bodyPreview,organizer,attendees,start,end,location')
                     .get((error, messages: any, rawResponse?: any) => {   
@@ -222,14 +274,15 @@ export default class GraphApi extends React.Component<IGraphApiProps, iState> {
                             //* Graph returns the data we want in messages.value. We need iterate the array and store 
                             //* the data into a format that our calendar plug-in can understand.  Note: MSGraph returns
                             //* the to and from dates in a odd format. 
-                            //BUG: The times that are being pushed here are correct, but aren't being displayed correctly.    
-                            messages.value.map((eventItem) => {  
+                            //BUGFIX: The times that are being pushed here are correct, but aren't being displayed correctly.    
+                            messages.value.map((eventItem) => {                                  
                                 let tmp = {
                                     id:  eventItem.id,
                                     title: eventItem.subject,                                    
                                     from: this.RACDateMaker(eventItem.start.dateTime),
                                     to:  this.RACDateMaker(eventItem.end.dateTime),
-                                    color: `${this.props.CalendarCollection[cnt].CalendarColor}`
+                                    color: `${this.props.CalendarCollection[cnt].CalendarColor}`,
+                                    origin: "Outlook" //* This variable will tell the app where to look for the long Description of the Event.
                                 }; 
                                 //* After reach iteration,  we are going to push the data into the variable we stored
                                 //* the current state into.                                               

@@ -21,11 +21,13 @@
     "@pnp/queryable": "^3.1.0",
     "@pnp/sp": "3.1.0",
     "@pnp/spfx-property-controls": "3.6.0",
+    "axios": "^0.26.1",
     "classnames": "^2.3.1",
     "office-ui-fabric-react": "7.174.1",
     "react": "16.13.1",
     "react-awesome-calendar": "^1.0.14",
-    "react-dom": "16.13.1"
+    "react-dom": "16.13.1",
+    "sharepoint-events-parser": "^0.0.2"
   },
   "devDependencies": {
     "@microsoft/sp-build-web": "1.14.0-rc.2",

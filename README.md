@@ -23,7 +23,14 @@ This is a proof-of-concept application which pulls data from multiple Exchange G
 
 Version|Comments
 --------|---------
-20220326-0915 | Added the ability to add and display multiple calendars. 
+20220326-0915 | Added the ability to add and display multiple Outlook Group Calendars. 
+20220404-0922 | Adding the ability to add and display Multiple SharePoint Calendars.
+
+## Known Issues
+
+Date|Issues Nbr|Description|Status
+--------|---------|---------|---------
+20220404|202204040921|Recurring Events in Outlook only shows the first event in the series.|Investigating Issue
 
 ### "Sharing is Caring"
 
@@ -60,4 +67,7 @@ This extension illustrates the following concepts:
 - [Microsoft Graph TypeScript Types](https://www.npmjs.com/package/@microsoft/microsoft-graph-types) - The Microsoft Graph TypeScript definitions enable editors to provide intellisense on Microsoft Graph objects including users, messages, and groups
 - [React Awesome Calendar](https://www.npmjs.com/package/react-awesome-calendar) - react-awesome-calendar is a library that allows you to easily add a calendar to your application. React Awesome Calendar also supports the ability to display events.
 - [PNP Transition Guide](https://pnp.github.io/pnpjs/getting-started/) - PnPjs is a collection of fluent libraries for consuming SharePoint, Graph, and Office 365 REST APIs in a type-safe way. You can use it within SharePoint Framework, Nodejs, or any JavaScript project. This an open source initiative and we encourage contributions and constructive feedback from the community.
-
+- [(Stack Exchange) REST API + Expand Recurring Calendar Events?](https://sharepoint.stackexchange.com/questions/23221/rest-api-expand-recurring-calendar-events) - Is there a way using the REST API (through javascript) to expand recurring calendar items? Or is there a helpful client side utility to assist with this?
+- [sharepoint-events-parser](https://www.npmjs.com/package/sharepoint-events-parser) - Recurring events on a SharePoint calendar are not stored individually; instead, the parent event contains the recurrence information stored as XML. The only other way I've seen to get recurrence data from a calendar list on the client side is to use the Lists.asmx web service. This is not necessarily a bad way to go, but working with the CAML for the query and the XML returned from that web service can be burdensome.
+- [axios](https://www.npmjs.com/package/axios) - Promise based HTTP client for the browser and node.js
+- [Lorem Ipsum Generators](https://loremipsum.io/ultimate-list-of-lorem-ipsum-generators/) - Think classic lorem ipsum is passé? Give your next project a bit more edge with these funny and unique text generators
