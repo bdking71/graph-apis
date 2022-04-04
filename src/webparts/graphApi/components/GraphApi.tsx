@@ -23,7 +23,13 @@
     import * as strings from 'GraphApiWebPartStrings';
     import classnames from 'classnames';
     
+    import { spfi, SPFx } from "@pnp/sp";
+    import "@pnp/sp/webs";
+    import "@pnp/sp/lists";
+    import "@pnp/sp/items";
+
 //#endregion
+
 
 
 //#region [Interfaces]
@@ -41,6 +47,7 @@ export default class GraphApi extends React.Component<IGraphApiProps, iState> {
     //#region [Variables]
 
         private calendar: any = null;  //* Reference to the calendar control on the page.  
+        private sp;
 
     //#endregion
 
@@ -57,7 +64,7 @@ export default class GraphApi extends React.Component<IGraphApiProps, iState> {
             //! I don't believe the "this.calendar=React.creatRef();" is needed, but I thought I would create 
             //! the ref in case there is a future need. 
             this.calendar = React.createRef();   
-                
+            
         }
         
         public componentDidMount() {   
@@ -65,12 +72,15 @@ export default class GraphApi extends React.Component<IGraphApiProps, iState> {
             if (this.props.CalendarCollection) {
                 //* Once the component completes it's initial mount; let's get outlook data.
                 this.getandProcessOutlookEventData();
+                this.getandProcessSharePointEventData();
             }                                    
         }
 
         public render(): React.ReactElement<IGraphApiProps> {   
-            console.log("🚀 ~ file: GraphApi.tsx ~ line 66 ~ GraphApi ~ render ~ this.props", this.props);
-                                 
+            console.log("🚀 ~ file: GraphApi.tsx ~ line 72 ~ GraphApi ~ render ~ this.props", this.props);
+            console.log("🚀 ~ file: GraphApi.tsx ~ line 73 ~ GraphApi ~ render ~ this.state", this.state);
+            
+            
             let myEventElement: string = "graphEventContainer";
             let myEventDataElement: string = "myEventData";
             let myCalendarElement: string = "graphCalendarContainer";
@@ -158,19 +168,36 @@ export default class GraphApi extends React.Component<IGraphApiProps, iState> {
         //* Anyway, we need to build a date string for the calendar and force the React-Awesome-Calendar display 
         //* the event on the date time we provide.  We do so by creating the string this way: "YYYY-MM-DDTHH:MM:SS+00.00".  
         private RACDateMaker = (RACDateString: string): string => {            
-            let RACDate: Date = new Date (RACDateString.substring(0,10) + " " + RACDateString.substring(11,22) + " UTC");                    
+            //BUG: I had this working; however, when I checked moved the code base over to 
+            //BUG: an Ubuntu 21 machines, it started throwing invalid dates errors.  I am 
+            //BUG: working if the Invalid Date error is a issue with the Firefox 98.0.2? 
+            let RACDate: Date = new Date (RACDateString.substring(0,10) + "T" + RACDateString.substring(11,16) + "Z");                    
             let myMonth: number = RACDate.getMonth() + 1;
-            return RACDate.getFullYear().toString() + "-" + 
+            let retval: string = RACDate.getFullYear().toString() + "-" + 
                     ("0" + myMonth.toString()).slice(-2).toString() + "-" + 
                     ("0" + RACDate.getDate()).slice(-2).toString() + "T" +
                     ("0" + RACDate.getHours()).slice(-2).toString() + ":" +
                     ("0" + RACDate.getMinutes()).slice(-2).toString() + ":" +
                     ("0" + RACDate.getSeconds()).slice(-2).toString() + "+00:00";                                            
+            return retval;
         }
             
-        private getandProcessSharePointEventData = ():void => {   
-            //* Let's get data from SharePoint using the SharePoint PnP modules. 
+        private getandProcessSharePointEventData = ():void => {  
+            let items;             
+            //* Let's get data from SharePoint using the SharePoint PnP modules. First, let's 
+            //* verify we have connection data for any SharePoint Calendar.
+            if (this.props.SharePointCalendarCollection.length !== 0) { 
+                //* Let's iterate through the array that contains the SharePoint connection info 
+                for (let cnt:number = 0; cnt <= (this.props.SharePointCalendarCollection.length - 1); cnt ++) {
+                    this.sp = spfi("https://bksdevsite.sharepoint.com").using(SPFx(this.props.Context));
+                    this.sp.web.lists.getByTitle("calendar").items().then((items) => {
+                        console.log("🚀 ~ file: GraphApi.tsx ~ line 191 ~ GraphApi ~ items", items);
+                        
+                        // https://sharepoint.stackexchange.com/questions/23221/rest-api-expand-recurring-calendar-events
 
+                    });
+                }
+            }
         }
 
         private getandProcessOutlookEventData = ():void => {  
