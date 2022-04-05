@@ -116,7 +116,6 @@ export default class GraphApi extends React.Component<IGraphApiProps, iState> {
                 //* use that row of data to display the Event to the user.   
                 this.state.outlookEvents.map((item, index) => {                                                 
                     if (item.id == eventID) {
-                        console.log("🚀 ~ file: GraphApi.tsx ~ line 90 ~ GraphApi ~ this.state.outlookEvents.map ~ item", item);                    
                         //* Really, can they make working with dates any more of a nightmare.  Ugg. 
                         let startDate:Date = this.SharePointDateMaker(item.start.dateTime);                      
                         let endDate:Date = this.SharePointDateMaker(item.end.dateTime);                                        
@@ -204,9 +203,7 @@ export default class GraphApi extends React.Component<IGraphApiProps, iState> {
                         .getByTitle(this.props.SharePointCalendarCollection[cnt].SharePointCalendarName)
                         .items()
                         .then((spEvents) => {
-                            console.log("🚀 ~ file: GraphApi.tsx ~ line 216 ~ GraphApi ~ spEvents", spEvents);
                             spEvents.map((spEvent) => {  
-                                console.log("🚀 ~ file: GraphApi.tsx ~ line 216 ~ GraphApi ~ spEvent", spEvent);
                                 //* SharePoint stores recurring events as a single event in the calendar. It doesn't
                                 //* look as if there is a good way to have SharePoint return the event expanded. So, we 
                                 //* will need to do this the hard way.  First, we will check to see if the
@@ -216,13 +213,23 @@ export default class GraphApi extends React.Component<IGraphApiProps, iState> {
                                     //* [URL]/_api/web/lists/getByTitle('[Calendar Name]')/items([ID])/RecurrenceData. Since,
                                     //* I couldn't find a pnp plugin that would provide us with the recurrence data; therefore, 
                                     //* I will use Axios to preform a rest query.   
-                                    let restQuery = `${this.props.SharePointCalendarCollection[cnt].SharePointCalendarSiteUrl}_api/web/lists/getByTitle('${this.props.SharePointCalendarCollection[cnt].SharePointCalendarName}')/items(${spEvent.ID})?$select=RecurrenceData,MasterSeriesItemID,EventType,*`;
-                                    console.log("🚀 ~ file: GraphApi.tsx ~ line 216 ~ GraphApi ~ spEvents.map ~ restQuery", restQuery)
-                                    axios({method: 'get', url: restQuery, responseType: 'json'}).then(recurrenceInfo =>{
-                                        console.log("🚀 ~ file: GraphApi.tsx ~ line 216 ~ GraphApi ~ axios ~ recurrenceInfo", recurrenceInfo)                                    
-                                        
+                                    let restQuery = `${this.props.SharePointCalendarCollection[cnt].SharePointCalendarSiteUrl}_api/web/lists/getByTitle('${this.props.SharePointCalendarCollection[cnt].SharePointCalendarName}')/items(${spEvent.ID})?$select=Duration,RecurrenceData,MasterSeriesItemID,EventType,*`;
+                                    axios({method: 'get', url: restQuery, responseType: 'json'}).then(recurrenceInfo =>{                                        
                                         let parsedArray = this.sharepointEventsParser.parseEvent(recurrenceInfo.data);
-                                        console.log("🚀 ~ file: GraphApi.tsx ~ line 216 ~ GraphApi ~ axios ~ parsedArray", parsedArray)
+                                        parsedArray.map((parsedEvent) => {
+                                            let tmp = {
+                                                id:parsedEvent.GUID,
+                                                title:parsedEvent.Title,  
+                                                from: parsedEvent.EventDate,
+                                                to:  parsedEvent.EndDate,
+                                                color: `${this.props.SharePointCalendarCollection[cnt].SharePointCalendarColor}`,
+                                                origin: "SPO" //* This variable will tell the app where to look for the long Description of the Event.
+                                            }; 
+                                            //* After reach iteration,  we are going to push the data into the variable we stored
+                                            //* the current state into.                                               
+                                            calenderEventsState.push(tmp);    
+                                            sharePointEventsState.push(parsedEvent);
+                                        });
                                         
                                     });    
                                     // https://www.npmjs.com/package/sharepoint-events-parser
@@ -235,7 +242,6 @@ export default class GraphApi extends React.Component<IGraphApiProps, iState> {
                                         color: `${this.props.SharePointCalendarCollection[cnt].SharePointCalendarColor}`,
                                         origin: "SPO" //* This variable will tell the app where to look for the long Description of the Event.
                                     }; 
-                                    console.log("🚀 ~ file: GraphApi.tsx ~ line 216 ~ GraphApi ~ spEvent.map ~ tmp", tmp)
                                     //* After reach iteration,  we are going to push the data into the variable we stored
                                     //* the current state into.                                               
                                     calenderEventsState.push(tmp);    
