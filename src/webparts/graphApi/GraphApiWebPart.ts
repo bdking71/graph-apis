@@ -51,8 +51,6 @@ export default class GraphApiWebPart extends BaseClientSideWebPart<IGraphApiWebP
     );
     ReactDom.render(element, this.domElement);
     telemetry.optOut();    
-    
-    console.log("🚀 ~ file: GraphApiWebPart.ts ~ line 55 ~ GraphApiWebPart ~ render ~ SharePointCalendarCollection", this.properties.SharePointCalendarCollection);
   }
 
   //#region [ProtectedMethods]

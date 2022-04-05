@@ -30,9 +30,11 @@ Version|Comments
 
 Date|Issues Nbr|Description|Status
 --------|---------|---------|---------
-20220404|202204040921|Recurring Events in Outlook only shows the first event in the series.|Investigating Issue
+20220404|202204040921|Recurring Events in Outlook only shows the first event in the series.|Fixed
 
 ### "Sharing is Caring"
+And whatever you do, whether in word or deed, do it all in the name of the Lord Jesus, giving thanks to God the Father through him. -- Colossians 3:17 (NIV)
+
 
 ### Disclaimer
 **THIS CODE IS PROVIDED *AS IS* WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING ANY IMPLIED WARRANTIES OF FITNESS FOR A PARTICULAR PURPOSE, MERCHANTABILITY, OR NON-INFRINGEMENT.**
@@ -45,21 +47,14 @@ Date|Issues Nbr|Description|Status
   - **npm install**
   - **gulp serve**
 
-> Include any additional steps as needed.
-
 ## Features
 
 Description of the extension that expands upon high-level summary above.
 
 This extension illustrates the following concepts:
 
-- Allows for displaying of multiple Outlook Calendars in SharePoint.
-- topic 2
-- topic 3
-
-> Notice that better pictures and documentation will increase the sample usage and the value you are providing for others. Thanks for your submissions advance.
-
-> Share your web part with others through Microsoft 365 Patterns and Practices program to get visibility and exposure. More details on the community, open-source projects and other activities from http://aka.ms/m365pnp.
+- Allows for displaying of multiple Outlook Calendars 
+- Allows for displaying of multiple SharePoint Calendars
 
 ## References
 - [@pnp/spfx-property-control](https://pnp.github.io/sp-dev-fx-property-controls) - This repository provides developers with a set of reusable property pane controls that can be used in their SharePoint Framework (SPFx) solutions.
@@ -68,6 +63,7 @@ This extension illustrates the following concepts:
 - [React Awesome Calendar](https://www.npmjs.com/package/react-awesome-calendar) - react-awesome-calendar is a library that allows you to easily add a calendar to your application. React Awesome Calendar also supports the ability to display events.
 - [PNP Transition Guide](https://pnp.github.io/pnpjs/getting-started/) - PnPjs is a collection of fluent libraries for consuming SharePoint, Graph, and Office 365 REST APIs in a type-safe way. You can use it within SharePoint Framework, Nodejs, or any JavaScript project. This an open source initiative and we encourage contributions and constructive feedback from the community.
 - [(Stack Exchange) REST API + Expand Recurring Calendar Events?](https://sharepoint.stackexchange.com/questions/23221/rest-api-expand-recurring-calendar-events) - Is there a way using the REST API (through javascript) to expand recurring calendar items? Or is there a helpful client side utility to assist with this?
+- [@pnp/graph/calendars](https://pnp.github.io/pnpjs/graph/calendars/) - Information on pnp.js and Graph calendars.
 - [sharepoint-events-parser](https://www.npmjs.com/package/sharepoint-events-parser) - Recurring events on a SharePoint calendar are not stored individually; instead, the parent event contains the recurrence information stored as XML. The only other way I've seen to get recurrence data from a calendar list on the client side is to use the Lists.asmx web service. This is not necessarily a bad way to go, but working with the CAML for the query and the XML returned from that web service can be burdensome.
 - [axios](https://www.npmjs.com/package/axios) - Promise based HTTP client for the browser and node.js
 - [Lorem Ipsum Generators](https://loremipsum.io/ultimate-list-of-lorem-ipsum-generators/) - Think classic lorem ipsum is passé? Give your next project a bit more edge with these funny and unique text generators

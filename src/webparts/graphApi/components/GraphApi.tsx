@@ -20,11 +20,13 @@
     import Calendar from 'react-awesome-calendar';
     import {IACCalendarEvents, IACCalendarEvent} from './IACCalenderTypes';
     import axios from 'axios';
-    //import { removeOnThemeChangeCallback, ThemeSettingName } from 'office-ui-fabric-react';
     import * as strings from 'GraphApiWebPartStrings';
     import classnames from 'classnames';
-    //import { spEventsParser } from 'sharepoint-events-parser';
     import { spfi, SPFx } from "@pnp/sp";
+    
+    //import { graphfi } from "@pnp/graph";
+    //import '@pnp/graph/calendars';
+    //import '@pnp/graph/users';
 
     import "@pnp/sp/webs";
     import "@pnp/sp/lists";
@@ -51,6 +53,7 @@ export default class GraphApi extends React.Component<IGraphApiProps, iState> {
 
         private calendar: any = null;  //* Reference to the calendar control on the page.  
         private sp;
+        private graph;
         private sharepointEventsParser: any = require("sharepoint-events-parser");
 
 
@@ -251,14 +254,12 @@ export default class GraphApi extends React.Component<IGraphApiProps, iState> {
                         //* Finally, we are going to set both the calendarEvents and the outlookEvents state with the 
                         //* events have in this iteration of the Calendar Collection.
                         this.setState({calenderEvents:calenderEventsState, sharePointEvents:sharePointEventsState});  
-                        // https://sharepoint.stackexchange.com/questions/23221/rest-api-expand-recurring-calendar-events
-
                     });
                 }
             }
         }
 
-        private getandProcessOutlookEventData = ():void => {  
+        private getandProcessOutlookEventData = ():void => {          
             //* We will iterate through the Calendar Collection in order to pull data from MSGraph 
             //* for each calendar the user defined in the webpart props.            
             for (let cnt = 0; cnt <= (this.props.CalendarCollection.length - 1); cnt ++) {      
@@ -268,33 +269,54 @@ export default class GraphApi extends React.Component<IGraphApiProps, iState> {
                     //* outlookEvent state so, we don't loose them when added new entries.  
                     let calenderEventsState: any[] = this.state.calenderEvents;
                     let outlookEventsState: any[] = this.state.outlookEvents; 
-                    //BUG: [ID: 202204040921]Recurring Events stored in Outlook are not displaying all events.  Currently, it
-                    //BUG: [ID: 202204040921]is showing only the first event in the series. 
+                    //BUGFIX: [ID: 202204040921]Recurring Events stored in Outlook are not displaying all events.  Currently, it
+                    //BUGFix: [ID: 202204040921]is showing only the first event in the series. 
                     client.api(`/groups/${this.props.CalendarCollection[cnt].CalendarGuid}/events`)            
-                    .select('subject,body,bodyPreview,organizer,attendees,start,end,location')
+                    //.select('subject,body,bodyPreview,organizer,attendees,start,end,location')
+                    .select('*')
                     .get((error, messages: any, rawResponse?: any) => {   
                         if (!messages) {
                             //* Let's log any errors out the console and throw an error back to the caller.
                             console.error(error);   
                             throw error; 
                         } else {   
+                            let tmp; 
                             //* Graph returns the data we want in messages.value. We need iterate the array and store 
                             //* the data into a format that our calendar plug-in can understand.  Note: MSGraph returns
                             //* the to and from dates in a odd format. 
-                            //BUGFIX: The times that are being pushed here are correct, but aren't being displayed correctly.    
-                            messages.value.map((eventItem) => {                                  
-                                let tmp = {
-                                    id:  eventItem.id,
-                                    title: eventItem.subject,                                    
-                                    from: this.RACDateMaker(eventItem.start.dateTime),
-                                    to:  this.RACDateMaker(eventItem.end.dateTime),
-                                    color: `${this.props.CalendarCollection[cnt].CalendarColor}`,
-                                    origin: "Outlook" //* This variable will tell the app where to look for the long Description of the Event.
-                                }; 
-                                //* After reach iteration,  we are going to push the data into the variable we stored
-                                //* the current state into.                                               
-                                calenderEventsState.push(tmp);    
-                                outlookEventsState.push(eventItem);
+                            messages.value.map((eventItem) => {     
+                                //* Let's check to see if this event is recurring.                                
+                                if (eventItem.recurrence != null) {
+                                    client
+                                        .api(`/groups/${this.props.CalendarCollection[cnt].CalendarGuid}/calendar/events/${eventItem.id}/instances?startDateTime=2022-01-01&endDateTime=2023-01-01`)                                        
+                                        .get((error0, messages0: any, rawResponse0?: any) => {
+                                            messages0.value.map((OutLookRecurringEventItem) => {
+                                                tmp = {
+                                                    id:  OutLookRecurringEventItem.id,
+                                                    title: OutLookRecurringEventItem.subject,                                    
+                                                    from: this.RACDateMaker(OutLookRecurringEventItem.start.dateTime),
+                                                    to:  this.RACDateMaker(OutLookRecurringEventItem.end.dateTime),
+                                                    color: `${this.props.CalendarCollection[cnt].CalendarColor}`,
+                                                    origin: "Outlook" //* This variable will tell the app where to look for the long Description of the Event.
+                                                };                                                  
+                                                calenderEventsState.push(tmp);    
+                                                outlookEventsState.push(OutLookRecurringEventItem); 
+                                            });                                            
+                                    });                                                                       
+                                } else { 
+                                    tmp = {
+                                        id:  eventItem.id,
+                                        title: eventItem.subject,                                    
+                                        from: this.RACDateMaker(eventItem.start.dateTime),
+                                        to:  this.RACDateMaker(eventItem.end.dateTime),
+                                        color: `${this.props.CalendarCollection[cnt].CalendarColor}`,
+                                        origin: "Outlook" //* This variable will tell the app where to look for the long Description of the Event.
+                                    };                                 
+                                    //* After reach iteration,  we are going to push the data into the variable we stored
+                                    //* the current state into.                                               
+                                    calenderEventsState.push(tmp);    
+                                    outlookEventsState.push(eventItem);
+                                }
                             }); 
                         }                
                         //* Finally, we are going to set both the calendarEvents and the outlookEvents state with the 
@@ -306,5 +328,4 @@ export default class GraphApi extends React.Component<IGraphApiProps, iState> {
         }
 
     //#endregion
-
 }
