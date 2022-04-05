@@ -109,6 +109,11 @@ export default class GraphApi extends React.Component<IGraphApiProps, iState> {
             };
 
             const handleClickEvent = (eventID:string) => {            
+            
+                console.log("🚀 ~ file: GraphApi.tsx ~ line 112 ~ GraphApi ~ handleClickEvent ~ eventID", eventID)
+                let eSource:string = this.getEventSource(eventID);    
+            
+
                 //* Let's hide the calender and display a container for the event.  
                 document.getElementById(myCalendarElement).classList.remove(`${styles.show}`);                
                 document.getElementById(myCalendarElement).classList.add(`${styles.hide}`);
@@ -162,6 +167,22 @@ export default class GraphApi extends React.Component<IGraphApiProps, iState> {
     //#endregion
   
     //#region [PrivateMethods]
+
+        //* We need a method that will return the source of the event (eID) provided.  The return value 
+        //* should be either "SPO" or "Outlook."  Later versions may expand by added more sources. 
+        private getEventSource = (eID: string):string => {
+            //* To be safe, we are going to verify we have events on the calendar.  I feel like I am
+            //* checking both directions on an one direction road. 
+            if (this.state.calenderEvents.length !== 0) {
+                //* lets iterate the calendar collection until we find the row that matches the eID var. 
+                this.state.calenderEvents.map((item, index) => {
+                    if (item.id == eID) {
+                        return item.origin.toString();
+                    }                      
+                 });
+            }
+            return null;
+        };
 
         private SharePointDateMaker = (spDateString: string):Date => {
             //* The format that SP is giving us is "2022-04-01T20:30:00.0000000" without the UTC.  This bit of information is 
@@ -269,10 +290,9 @@ export default class GraphApi extends React.Component<IGraphApiProps, iState> {
                     //* outlookEvent state so, we don't loose them when added new entries.  
                     let calenderEventsState: any[] = this.state.calenderEvents;
                     let outlookEventsState: any[] = this.state.outlookEvents; 
-                    //BUGFIX: [ID: 202204040921]Recurring Events stored in Outlook are not displaying all events.  Currently, it
-                    //BUGFix: [ID: 202204040921]is showing only the first event in the series. 
+                    //BUGFIX: [ID: [202204040921]Recurring Events stored in Outlook are not displaying all events.  Currently, it
+                    //BUGFix: [ID: [202204040921]is showing only the first event in the series. 
                     client.api(`/groups/${this.props.CalendarCollection[cnt].CalendarGuid}/events`)            
-                    //.select('subject,body,bodyPreview,organizer,attendees,start,end,location')
                     .select('*')
                     .get((error, messages: any, rawResponse?: any) => {   
                         if (!messages) {
@@ -287,6 +307,10 @@ export default class GraphApi extends React.Component<IGraphApiProps, iState> {
                             messages.value.map((eventItem) => {     
                                 //* Let's check to see if this event is recurring.                                
                                 if (eventItem.recurrence != null) {
+                                    //* Let's make a second call the graph api, asking for all the instances of the
+                                    //* current event.
+
+                                    //https://docs.microsoft.com/en-us/graph/api/event-list-instances?view=graph-rest-1.0&tabs=http
                                     client
                                         .api(`/groups/${this.props.CalendarCollection[cnt].CalendarGuid}/calendar/events/${eventItem.id}/instances?startDateTime=2022-01-01&endDateTime=2023-01-01`)                                        
                                         .get((error0, messages0: any, rawResponse0?: any) => {
