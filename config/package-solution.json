@@ -3,7 +3,7 @@
   "solution": {
     "name": "graph-apis-client-side-solution",
     "id": "bc5f96c6-a2b6-49c0-9fd9-11a56373505e",
-    "version": "2022.03.30.1111",
+    "version": "2022.04.06.1057",
     "includeClientSideAssets": true,
     "skipFeatureDeployment": true,
     "isDomainIsolated": false,
@@ -15,7 +15,7 @@
     ],
     "developer": {
       "name": "Bryan King",
-      "websiteUrl": "https://bdking71.wordpress.com",
+      "websiteUrl": "https://github.com/bdking71",
       "privacyUrl": "",
       "termsOfUseUrl": "",
       "mpnId": "Undefined-1.14.0-rc.2"

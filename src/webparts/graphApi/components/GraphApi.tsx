@@ -108,37 +108,56 @@ export default class GraphApi extends React.Component<IGraphApiProps, iState> {
                 event.preventDefault();
             };
 
-            const handleClickEvent = (eventID:string) => {            
-            
-                console.log("🚀 ~ file: GraphApi.tsx ~ line 112 ~ GraphApi ~ handleClickEvent ~ eventID", eventID)
+            const handleClickEvent = (eventID:string) => {                        
                 let eSource:string = this.getEventSource(eventID);    
-            
-
                 //* Let's hide the calender and display a container for the event.  
                 document.getElementById(myCalendarElement).classList.remove(`${styles.show}`);                
                 document.getElementById(myCalendarElement).classList.add(`${styles.hide}`);
                 document.getElementById(myEventElement).classList.remove(`${styles.hide}`);
                 document.getElementById(myEventElement).classList.add(`${styles.show}`);
-
-                //* Let's iterate through state.outlookEvents and see if we can find a matching eventID, and 
-                //* use that row of data to display the Event to the user.   
-                this.state.outlookEvents.map((item, index) => {                                                 
-                    if (item.id == eventID) {
-                        //* Really, can they make working with dates any more of a nightmare.  Ugg. 
-                        let startDate:Date = this.SharePointDateMaker(item.start.dateTime);                      
-                        let endDate:Date = this.SharePointDateMaker(item.end.dateTime);                                        
-                        let myEventData: string = "";                                  
-                        myEventData = `<h2>${item.subject}</h2>`;
-                        myEventData += `<p><strong>Description:</strong><br><span>${item.body.content}</span></p>`;
-                        if (item.location.displayName) {
-                            myEventData += `<p><strong>Location: </strong><span>${item.location.displayName}</span></p>`;
-                        }                    
-                        myEventData += `<p><strong>Start Time: </strong><span>${startDate.toString()}</span></p>`;                        
-                        myEventData += `<p><strong>End Time: </strong><span>${endDate.toString()}</span></p>`;                        
+                let myEventData: string = "";  
+                switch(eSource) {
+                    case "Outlook":
+                        //* Let's iterate through state.outlookEvents and see if we can find a matching eventID, and 
+                        //* use that row of data to display the Event to the user. 
+                        this.state.outlookEvents.map((item, index) => {                                                 
+                            if (item.id == eventID) {
+                                console.log("🚀 ~ file: GraphApi.tsx ~ line 130 ~ GraphApi ~ this.state.outlookEvents.map ~ item.id", item.id)
+                                //* Really, can they make working with dates any more of a nightmare.  Ugg. 
+                                let startDate:Date = this.SharePointDateMaker(item.start.dateTime);                      
+                                let endDate:Date = this.SharePointDateMaker(item.end.dateTime);                                                                            
+                                myEventData = `<h2>${item.subject}</h2>`;
+                                myEventData += `<p><strong>Description:</strong><br><span>${item.body.content}</span></p>`;
+                                if (item.location.displayName) {
+                                    myEventData += `<p><strong>Location: </strong><span>${item.location.displayName}</span></p>`;
+                                }                    
+                                myEventData += `<p><strong>Start Time: </strong><span>${startDate.toString()}</span></p>`;                        
+                                myEventData += `<p><strong>End Time: </strong><span>${endDate.toString()}</span></p>`;                        
+                                document.getElementById(myEventDataElement).innerHTML = myEventData;
+                            }
+                        });   
+                    break;
+                    case "SPO":
+                        this.state.sharePointEvents.map((item, index) => { 
+                            if (item.Id == eventID) {                           
+                                console.log("🚀 ~ file: GraphApi.tsx ~ line 143 ~ GraphApi ~ this.state.sharePointEvents.map ~ item", item)
+                                myEventData = `<h2>${item.Title}</h2>`;
+                                myEventData += `<p><strong>Description:</strong><br><span>${item.Description}</span></p>`;
+                                if (item.Location) {
+                                    myEventData += `<p><strong>Location: </strong><span>${item.Location}</span></p>`;
+                                }  
+                                myEventData += `<p><strong>Start Time: </strong><span>${item.EventDate}</span></p>`;                        
+                                myEventData += `<p><strong>End Time: </strong><span>${item.EventDate}</span></p>`; 
+                                document.getElementById(myEventDataElement).innerHTML = myEventData;
+                            }
+                        });
+                    break;
+                    default: //* Null
+                        myEventData = `<h2>Event Not found.</h2>`;
                         document.getElementById(myEventDataElement).innerHTML = myEventData;
-                    }
-                });     
+                }
             };
+            
             //* Let's check to see if there are any events in the state to display.  If not, we
             //* we will show an empty calendar. 
             if (this.state.calenderEvents.length !== 0) {         
@@ -171,17 +190,19 @@ export default class GraphApi extends React.Component<IGraphApiProps, iState> {
         //* We need a method that will return the source of the event (eID) provided.  The return value 
         //* should be either "SPO" or "Outlook."  Later versions may expand by added more sources. 
         private getEventSource = (eID: string):string => {
+            let retval: string = null; 
             //* To be safe, we are going to verify we have events on the calendar.  I feel like I am
             //* checking both directions on an one direction road. 
             if (this.state.calenderEvents.length !== 0) {
                 //* lets iterate the calendar collection until we find the row that matches the eID var. 
                 this.state.calenderEvents.map((item, index) => {
                     if (item.id == eID) {
-                        return item.origin.toString();
+                        console.log("🚀 ~ file: GraphApi.tsx ~ line 203 ~ GraphApi ~ this.state.calenderEvents.map ~ item.id", item.id)
+                        retval = item.origin;
                     }                      
                  });
             }
-            return null;
+            return retval;
         };
 
         private SharePointDateMaker = (spDateString: string):Date => {
