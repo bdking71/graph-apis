@@ -22,16 +22,12 @@
     import axios from 'axios';
     import * as strings from 'GraphApiWebPartStrings';
     import classnames from 'classnames';
-    import { spfi, SPFx } from "@pnp/sp";
-    
-    //import { graphfi } from "@pnp/graph";
-    //import '@pnp/graph/calendars';
-    //import '@pnp/graph/users';
+    import { spfi, SPFI, SPFx } from "@pnp/sp";
 
     import "@pnp/sp/webs";
     import "@pnp/sp/lists";
     import "@pnp/sp/items";
-
+    
 //#endregion
 
 
@@ -231,7 +227,7 @@ export default class GraphApi extends React.Component<IGraphApiProps, iState> {
             return retval;
         }
             
-        private getandProcessSharePointEventData = ():void => {  
+        private getandProcessSharePointEventData = async ():Promise<void> => {  
             let items;             
             //* Let's get data from SharePoint using the SharePoint PnP modules. First, let's 
             //* verify we have connection data for any SharePoint Calendar.
@@ -242,11 +238,13 @@ export default class GraphApi extends React.Component<IGraphApiProps, iState> {
                     let sharePointEventsState: any[] = this.state.sharePointEvents;
                     
                 //* Let's iterate through the array that contains the SharePoint connection info 
+                //.filter((EventDate qte '04/01/2022') and (EndDate lte '04/30/2022))                          
                 for (let cnt:number = 0; cnt <= (this.props.SharePointCalendarCollection.length - 1); cnt ++) {
                     this.sp = spfi(this.props.SharePointCalendarCollection[cnt].SharePointCalendarSiteUrl).using(SPFx(this.props.Context));
-                    this.sp.web.lists
-                        .getByTitle(this.props.SharePointCalendarCollection[cnt].SharePointCalendarName)
+                    await this.sp.web.lists
+                        .getByTitle(this.props.SharePointCalendarCollection[cnt].SharePointCalendarName)                        
                         .items()
+                        .get()                       
                         .then((spEvents) => {
                             spEvents.map((spEvent) => {  
                                 //* SharePoint stores recurring events as a single event in the calendar. It doesn't
