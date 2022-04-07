@@ -21,7 +21,7 @@
     "@pnp/logging": "^3.1.0",
     "@pnp/odata": "2.13.0",
     "@pnp/queryable": "^3.1.0",
-    "@pnp/sp": "3.1.0",
+    "@pnp/sp": "^3.1.0-v3nightly.20220307",
     "@pnp/spfx-property-controls": "3.6.0",
     "axios": "^0.26.1",
     "classnames": "^2.3.1",

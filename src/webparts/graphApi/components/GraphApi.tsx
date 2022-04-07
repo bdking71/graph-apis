@@ -22,15 +22,14 @@
     import axios from 'axios';
     import * as strings from 'GraphApiWebPartStrings';
     import classnames from 'classnames';
-    import { spfi, SPFI, SPFx } from "@pnp/sp";
 
+    import { spfi, SPFx } from "@pnp/sp";
+    import { Queryable } from "@pnp/queryable";
     import "@pnp/sp/webs";
     import "@pnp/sp/lists";
     import "@pnp/sp/items";
     
 //#endregion
-
-
 
 //#region [Interfaces]
 
@@ -51,7 +50,6 @@ export default class GraphApi extends React.Component<IGraphApiProps, iState> {
         private sp;
         private graph;
         private sharepointEventsParser: any = require("sharepoint-events-parser");
-
 
     //#endregion
 
@@ -241,11 +239,23 @@ export default class GraphApi extends React.Component<IGraphApiProps, iState> {
                 //.filter((EventDate qte '04/01/2022') and (EndDate lte '04/30/2022))                          
                 for (let cnt:number = 0; cnt <= (this.props.SharePointCalendarCollection.length - 1); cnt ++) {
                     this.sp = spfi(this.props.SharePointCalendarCollection[cnt].SharePointCalendarSiteUrl).using(SPFx(this.props.Context));
-                    await this.sp.web.lists
+                    
+                    //todo: -----------------------------------------------------------------------------------------
+                    //todo: We need to find a way to filter the data to the current month for both this main query and
+                    //todo: for the recurring event query. Since we are using @pnp/sp, the filter is throwing errors. 
+                    //todo: -----------------------------------------------------------------------------------------
+
+                    /*await this.sp.web.lists
                         .getByTitle(this.props.SharePointCalendarCollection[cnt].SharePointCalendarName)                        
-                        .items()
-                        .get()                       
-                        .then((spEvents) => {
+                        .items("Title eq 'Weekly Production Goals Meeting'")
+                        .then((spEvents) => {*/
+
+                        //* Well, this isn't throwing an error anymore.  It's not returning any data either.  
+                        await this.sp.web.lists.getByTitle(this.props.SharePointCalendarCollection[cnt].SharePointCalendarName).getItemsByCAMLQuery({
+                            ViewXml: `<View><Query><Where><Gt><FieldRef Name="EventDate"/><Value Type="DateTime">2022-04-01T00:00:01Z</Value></Gt></Where></Query></View>`,
+                        }).then((spEvents) => {
+                        console.log("🚀 ~ file: GraphApi.tsx ~ line 247 ~ GraphApi ~ .then ~ spEvents", spEvents)
+                            
                             spEvents.map((spEvent) => {  
                                 //* SharePoint stores recurring events as a single event in the calendar. It doesn't
                                 //* look as if there is a good way to have SharePoint return the event expanded. So, we 
