@@ -23,12 +23,7 @@
     import * as strings from 'GraphApiWebPartStrings';
     import classnames from 'classnames';
 
-    import { spfi, SPFx } from "@pnp/sp";
-    import { Queryable } from "@pnp/queryable";
-    import "@pnp/sp/webs";
-    import "@pnp/sp/lists";
-    import "@pnp/sp/items";
-    
+
 //#endregion
 
 //#region [Interfaces]
@@ -226,86 +221,95 @@ export default class GraphApi extends React.Component<IGraphApiProps, iState> {
         }
             
         private getandProcessSharePointEventData = async ():Promise<void> => {  
-            let items;             
-            //* Let's get data from SharePoint using the SharePoint PnP modules. First, let's 
-            //* verify we have connection data for any SharePoint Calendar.
+            let items: any = null;     
+            let restQuery:string = null; 
+            let tmp: any = null;  
+
             if (this.props.SharePointCalendarCollection.length !== 0) { 
-                    //* let's make a copy of the current calender entries stored in the calendarEvents and the
-                    //* sharePointEvents state so, we don't loose them when added new entries.  
-                    let calenderEventsState: any[] = this.state.calenderEvents;
-                    let sharePointEventsState: any[] = this.state.sharePointEvents;
-                    
-                //* Let's iterate through the array that contains the SharePoint connection info 
-                //.filter((EventDate qte '04/01/2022') and (EndDate lte '04/30/2022))                          
+                //* let's make a copy of the current calender entries stored in the calendarEvents and the
+                //* sharePointEvents state so, we don't loose them when added new entries.  
+                let calenderEventsState: any[] = this.state.calenderEvents;
+                let sharePointEventsState: any[] = this.state.sharePointEvents;
+                
+                //* Let's iterate through the list of SharePoint Calendars
                 for (let cnt:number = 0; cnt <= (this.props.SharePointCalendarCollection.length - 1); cnt ++) {
-                    this.sp = spfi(this.props.SharePointCalendarCollection[cnt].SharePointCalendarSiteUrl).using(SPFx(this.props.Context));
-                    
-                    //todo: -----------------------------------------------------------------------------------------
-                    //todo: We need to find a way to filter the data to the current month for both this main query and
-                    //todo: for the recurring event query. Since we are using @pnp/sp, the filter is throwing errors. 
-                    //todo: -----------------------------------------------------------------------------------------
+                    //* Let's get non-recurrence event data from the current SharePoint calendar 
+                    //* in the iterations. 
+                    restQuery = `${this.props.SharePointCalendarCollection[cnt].SharePointCalendarSiteUrl}_api/web/lists/`;
+                    restQuery += `getByTitle('${this.props.SharePointCalendarCollection[cnt].SharePointCalendarName}')/items?`;
+                    restQuery += `$select=Duration,RecurrenceData,MasterSeriesItemID,EventType,*`;
+                    restQuery += `&$filter=(fRecurrence eq 'false') and `; 
+                    restQuery += `(EventDate ge '2022-04-01T00:00:00Z') and `; //TODO: Make the EventDate a var.
+                    restQuery += `(EndDate le '2022-05-01T00:00:00Z') `; //TODO: Make the EndDate a var.
 
-                    /*await this.sp.web.lists
-                        .getByTitle(this.props.SharePointCalendarCollection[cnt].SharePointCalendarName)                        
-                        .items("Title eq 'Weekly Production Goals Meeting'")
-                        .then((spEvents) => {*/
-
-                        //* Well, this isn't throwing an error anymore.  It's not returning any data either.  
-                        await this.sp.web.lists.getByTitle(this.props.SharePointCalendarCollection[cnt].SharePointCalendarName).getItemsByCAMLQuery({
-                            ViewXml: `<View><Query><Where><Gt><FieldRef Name="EventDate"/><Value Type="DateTime">2022-04-01T00:00:01Z</Value></Gt></Where></Query></View>`,
-                        }).then((spEvents) => {
-                        console.log("🚀 ~ file: GraphApi.tsx ~ line 247 ~ GraphApi ~ .then ~ spEvents", spEvents)
-                            
-                            spEvents.map((spEvent) => {  
-                                //* SharePoint stores recurring events as a single event in the calendar. It doesn't
-                                //* look as if there is a good way to have SharePoint return the event expanded. So, we 
-                                //* will need to do this the hard way.  First, we will check to see if the
-                                //* current event in the loop is a recurring event (fRecurrence = true).  
-                                if (spEvent.fRecurrence == true) {
-                                    //* This event is part of the recurring event; The way to get the data from REST is: 
-                                    //* [URL]/_api/web/lists/getByTitle('[Calendar Name]')/items([ID])/RecurrenceData. Since,
-                                    //* I couldn't find a pnp plugin that would provide us with the recurrence data; therefore, 
-                                    //* I will use Axios to preform a rest query.   
-                                    let restQuery = `${this.props.SharePointCalendarCollection[cnt].SharePointCalendarSiteUrl}_api/web/lists/getByTitle('${this.props.SharePointCalendarCollection[cnt].SharePointCalendarName}')/items(${spEvent.ID})?$select=Duration,RecurrenceData,MasterSeriesItemID,EventType,*`;
-                                    axios({method: 'get', url: restQuery, responseType: 'json'}).then(recurrenceInfo =>{                                        
-                                        let parsedArray = this.sharepointEventsParser.parseEvent(recurrenceInfo.data);
-                                        parsedArray.map((parsedEvent) => {
-                                            let tmp = {
-                                                id:parsedEvent.GUID,
-                                                title:parsedEvent.Title,  
-                                                from: parsedEvent.EventDate,
-                                                to:  parsedEvent.EndDate,
-                                                color: `${this.props.SharePointCalendarCollection[cnt].SharePointCalendarColor}`,
-                                                origin: "SPO" //* This variable will tell the app where to look for the long Description of the Event.
-                                            }; 
-                                            //* After reach iteration,  we are going to push the data into the variable we stored
-                                            //* the current state into.                                               
-                                            calenderEventsState.push(tmp);    
-                                            sharePointEventsState.push(parsedEvent);
-                                        });
-                                        
-                                    });    
-                                    // https://www.npmjs.com/package/sharepoint-events-parser
-                                } else {
-                                    let tmp = {
-                                        id:  spEvent.Id,
-                                        title: spEvent.Title,                                    
-                                        from: spEvent.EventDate,
-                                        to:  spEvent.EndDate,
-                                        color: `${this.props.SharePointCalendarCollection[cnt].SharePointCalendarColor}`,
-                                        origin: "SPO" //* This variable will tell the app where to look for the long Description of the Event.
-                                    }; 
-                                    //* After reach iteration,  we are going to push the data into the variable we stored
-                                    //* the current state into.                                               
-                                    calenderEventsState.push(tmp);    
-                                    sharePointEventsState.push(spEvent);
-                                }                            
+                    console.log("🚀 ~ file: GraphApi.tsx ~ line 238 ~ GraphApi ~ getandProcessSharePointEventData= ~ restQuery", restQuery)
+                    axios({method: 'get', url: restQuery, responseType: 'json'}).then(SPCalendarItem =>{                                        
+                        console.log("🚀 ~ file: GraphApi.tsx ~ line 238 ~ GraphApi ~ axios ~ SPCalendarItem", SPCalendarItem)
+                        SPCalendarItem.data.value.map((SPCalendarItem) => {
+                            tmp = {
+                                id:  SPCalendarItem.Id,
+                                title: SPCalendarItem.Title,                                    
+                                from: this.RACDateMaker(SPCalendarItem.EventDate),
+                                to:  this.RACDateMaker(SPCalendarItem.EndDate),
+                                color: `${this.props.SharePointCalendarCollection[cnt].SharePointCalendarColor}`,
+                                origin: "SPO" //* This variable will tell the app where to look for the long Description of the Event.
+                            };                                                  
+                            calenderEventsState.push(tmp);    
+                            sharePointEventsState.push(SPCalendarItem); 
                         });
-                        //* Finally, we are going to set both the calendarEvents and the outlookEvents state with the 
-                        //* events have in this iteration of the Calendar Collection.
-                        this.setState({calenderEvents:calenderEventsState, sharePointEvents:sharePointEventsState});  
                     });
-                }
+    
+
+                    //[kludge] Let's get recurrence event data from the current SharePoint calendar in the 
+                    //[kludge] iteration.  In all the documentation that I have read, there isn't a way to 
+                    //[kludge] get recurring event data broken out into events from SharePoint. So, we are 
+                    //[kludge] going to query out all events that have data for the current month, and then
+                    //[kludge] expand that data using the sharepointEventsParser API then filter out the   
+                    //[kludge] current month from those results.  It's not the ideal way of doing this.    
+
+                    let viewXml: string = `<View>
+                                                <Query>
+                                                    <Where>
+                                                        <And>   
+                                                            <Eq>
+                                                                <FieldRef Name='fRecurrence' />      
+                                                                <Value Type='Boolean'>1</Value>
+                                                            </Eq>
+                                                            <DateRangesOverlap>
+                                                                <FieldRef Name='EventDate' />
+                                                                <FieldRef Name='EndDate' />
+                                                                <Value Type='DateTime'>
+                                                                    <Month />
+                                                                </Value>
+                                                            </DateRangesOverlap>
+                                                        </And>
+                                                    </Where>
+                                                    <ViewFields>
+                                                        <FieldRef Name="Id"></FieldRef>
+                                                    </ViewFields>
+                                                </Query>
+                                            </View>`;
+                    let url: string = `${this.props.SharePointCalendarCollection[cnt].SharePointCalendarSiteUrl}/_api/web/lists/getByTitle('${this.props.SharePointCalendarCollection[cnt].SharePointCalendarName}')/getitems`;
+                    let queryPayload = {  'query' : {'__metadata': { 'type': 'SP.CamlQuery' }, 'ViewXml' : viewXml}};
+                    let rDigest; 
+
+                    axios.post(`${this.props.SharePointCalendarCollection[cnt].SharePointCalendarSiteUrl}_api/contextinfo`)
+                    .then((res) => {rDigest = res.data.FormDigestValue;})
+                    .then(() => {
+                            axios({
+                                url: url,
+                                method: "POST",
+                                data: JSON.stringify(queryPayload),
+                                headers: {
+                                    "X-RequestDigest": rDigest,
+                                    "Accept": "application/json; odata=verbose",
+                                    "content-type": "application/json; odata=verbose"
+                                }
+                            }).then((SPCalendarItem) =>{  
+                                console.log("🚀 ~ file: GraphApi.tsx ~ line 239 ~ GraphApi ~ getandProcessSharePointEventData= ~ SPCalendarItem", SPCalendarItem)
+                            });
+                    });
+                } 
             }
         }
 
